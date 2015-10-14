@@ -1,0 +1,38 @@
+{
+  "name": "pg-test-util",
+  "version": "1.2.0",
+  "description": "Helper methods for PostgreSQL to use in tests.",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "scripts": {
+    "test": "mocha",
+    "doc": "rm -R doc; jsdoc -c jsdoc-conf.json README-JSDOC.md;    rm -f README.md;    jsdoc2md --src \"lib/**/*\" >JSDOC.md;    cat README-JSDOC.md JSDOC.md History.md LICENSE > README.md;    rm -r -f JSDOC.md;"
+  },
+  "engines": {
+    "node": ">=4.0.0"
+  },
+  "keywords": [
+    "pg",
+    "postgresql",
+    "test"
+  ],
+  "dependencies": {
+    "lodash": "^3.10.1",
+    "optional": "^0.1.3",
+    "pg": "^4.4.1"
+  },
+  "optionalDependencies": {
+    "pg-native": "^1.9.0"
+  },
+  "devDependencies": {
+    "chai": "^3.2.0",
+    "chai-as-promised": "^5.1.0",
+    "mocha": "^2.3.2",
+    "zoo-jsdoc": "^0.0.1"
+  },
+  "author": "Özüm Eldoğan",
+  "license": "MIT"
+}
