@@ -1,6 +1,6 @@
 {
   "name": "pg-test-util",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Helper methods for PostgreSQL to use in tests.",
   "main": "index.js",
   "repository": {
