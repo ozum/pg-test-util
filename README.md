@@ -36,11 +36,11 @@ and drop privileges and connect to "template1" database.
 **Example**  
 ```js
 var PgTestUtil = require('pg-test-util');
-var pgUtil = new PgTestUtil(
-    user             : 'User',
-    password         : 'Password',
+var pgUtil = new PgTestUtil({
+    user             : 'user',
+    password         : 'password',
     defaultDatabase  : 'db-name'
-);
+});
 
 // Using function in promises
 
