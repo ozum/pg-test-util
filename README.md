@@ -15,17 +15,18 @@ and drop privileges and connect to "template1" database.
 **Kind**: global class  
 
 * [PgTestUtil](#PgTestUtil)
-  * [new PgTestUtil()](#new_PgTestUtil_new)
+  * [new PgTestUtil([dbConfig])](#new_PgTestUtil_new)
   * [.executeSQL(sql, [db])](#PgTestUtil+executeSQL) ⇒ <code>Promise.&lt;T&gt;</code>
   * [.executeSQLFile(file, [db])](#PgTestUtil+executeSQLFile) ⇒ <code>Promise</code>
   * [.createDB(db, [options])](#PgTestUtil+createDB) ⇒ <code>Promise</code>
   * [.dropDB(db)](#PgTestUtil+dropDB) ⇒ <code>Promise</code>
 
 <a name="new_PgTestUtil_new"></a>
-### new PgTestUtil()
+### new PgTestUtil([dbConfig])
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
+| [dbConfig] | <code>Object</code> |  | Configuration parameters. |
 | [dbConfig.user] | <code>string</code> | <code>&quot;postgres&quot;</code> | User name |
 | [dbConfig.password] | <code>string</code> |  | DB Password |
 | [dbConfig.host] | <code>string</code> | <code>&quot;localhost&quot;</code> | Host name |
@@ -47,13 +48,6 @@ var pgUtil = new PgTestUtil({
 pgUtil.createDB('testdb', { drop: true })
 .then(function() { return pgUtil.createDB('testdb2', { drop: true }) })
 .then(function() { return pgUtil.dropDB('testdb') })
-.catch(function(err) { console.log(err); });
-
-// Using binded functions in promises
-
-pgUtil.createDB('testdb', { drop: true })
-.then(pgUtil.createDB.bind(pgUtil, 'testdb2', { drop: true }))
-.then(pgUtil.dropDB.bind(pgUtil, 'deneme'))
 .catch(function(err) { console.log(err); });
 ```
 <a name="PgTestUtil+executeSQL"></a>
@@ -109,14 +103,16 @@ to prevent this error from PostgreSQL: database "..." is being accessed by other
 
 History & Notes
 ================
-### 1.2.0 / 2015-09-21
+####
+
+#### 1.2.0 / 2015-09-21
 * connectionDatabase parameter added to constructor for an additional database to connect while creating and dropping
 databases.
 
-### 1.1.0 / 2015-09-17
+#### 1.1.0 / 2015-09-17
 * pg-native support added. (Optional)
 
-### 1.0.0 / 2015-09-16
+#### 1.0.0 / 2015-09-16
 * Initial version
 
 LICENSE

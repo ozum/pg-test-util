@@ -34,5 +34,19 @@
     "zoo-jsdoc": "^0.0.1"
   },
   "author": "Özüm Eldoğan",
-  "license": "MIT"
+  "license": "MIT",
+  "jscsConfig": {
+    "validateQuoteMarks": {
+      "mark": "'",
+      "escape": true
+    },
+    "validateIndentation": 4,
+    "requireTrailingComma": false
+  },
+  "eslintConfig": {
+    "env": {
+      "node": true,
+      "es6": true
+    }
+  }
 }

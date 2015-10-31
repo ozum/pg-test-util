@@ -82,18 +82,22 @@
     
     <section>
         <article>
-            <pre class="prettyprint source "><code>"use strict";
-var optional    = require('optional'),
-    pgNative    = optional('pg-native'),
-    pg          = pgNative ? require('pg').native : require('pg'),
-    fs          = require('fs'),
-    path        = require('path'),
-    lodash      = require('lodash');
+            <pre class="prettyprint source "><code>'use strict';
+var optional    = require('optional');
+var pgNative    = optional('pg-native');
+var pg          = pgNative ? require('pg').native : require('pg');
+var fs          = require('fs');
+var path        = require('path');
+var lodash      = require('lodash');
 
-//pg.on('error', function (err) {
-//    // Do nothing on termination due to admin command. We do this to drop previously created test db.
-//    if (!err.message.match('terminating connection due to administrator command')) { console.log('Database error: ', err); }
-//});
+var sql = {
+    dropConnection: function(db) { return `SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname='${db}';`; },
+
+    dropDB: function(db) { return `DROP DATABASE IF EXISTS "${db}";`; },
+
+    createDB: function(db, encoding, template) { return `CREATE DATABASE "${db}" WITH ENCODING = '${encoding}' TEMPLATE = "${template}";`; }
+
+};
 
 /**
  * Helper class and methods to use in tests using PostgreSQL database. Primary focus of this class is not speed.
@@ -122,16 +126,10 @@ var optional    = require('optional'),
  * .then(function() { return pgUtil.createDB('testdb2', { drop: true }) })
  * .then(function() { return pgUtil.dropDB('testdb') })
  * .catch(function(err) { console.log(err); });
- *
- * // Using binded functions in promises
- *
- * pgUtil.createDB('testdb', { drop: true })
- * .then(pgUtil.createDB.bind(pgUtil, 'testdb2', { drop: true }))
- * .then(pgUtil.dropDB.bind(pgUtil, 'deneme'))
- * .catch(function(err) { console.log(err); });
  */
 class PgTestUtil {
     /**
+     * @param {Object}  [dbConfig]                                  - Configuration parameters.
      * @param {string}  [dbConfig.user=postgres]                    - User name
      * @param {string}  [dbConfig.password]                         - DB Password
      * @param {string}  [dbConfig.host=localhost]                   - Host name
@@ -160,14 +158,19 @@ class PgTestUtil {
      */
     _singleSQL(client, sql) {
         return new Promise((resolve, reject) => {
-            //console.log("Executing SQL: " + sql);
-            client.query(sql, function (err, result) {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(result);
-                }
-            })
+            client.query(sql, function(err, result) {
+                if (err) return reject(new Error(err));
+                resolve(result);
+            });
+        });
+    }
+
+    _connect(client) {
+        return new Promise((resolve, reject) => {
+            client.connect((err) => {
+                if (err) return reject(new Error(err));
+                resolve();
+            });
         });
     }
 
@@ -180,42 +183,25 @@ class PgTestUtil {
      */
     executeSQL(sql, db) {
         db = db || this.dbConfig.defaultDatabase;
-        if (!db) {
-            throw new Error('db parameter for database name is required.');
-        }
+        if (!db) throw new Error('db parameter for database name is required.');
 
-        let    client  = new pg.Client(lodash.defaults({ database: db }, this.dbConfig)),
-            pro     = [];
+        let client  = new pg.Client(lodash.defaults({ database: db }, this.dbConfig));
 
-        // Convert SQL into array if it is a string.
-        if (typeof sql === 'string') {
-            sql = [sql];
-        }
+        if (typeof sql === 'string') sql = [sql]; // Convert SQL into array if it is a string.
 
-        // Create a promise for connecting client.
-        pro[0] = new Promise((resolve, reject) => {
-            client.connect(function(err) {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve();
-                }
+        let promise = sql.reduce((prev, current) => {
+            return prev.then(() => { return this._singleSQL(client, current); });
+        }, this._connect(client));
+
+        promise = promise
+            .then((result) => {
+                client.end(); return result;
+            })
+            .catch((err) => {
+                client.end(); return Promise.reject(err);
             });
-        });
 
-        // Execute given SQL queries by adding then blocks.
-        for (let i = 0; i &lt; sql.length; i = i + 1) {
-            pro[i+1] = pro[i].then( () => { return this._singleSQL(client, sql[i], db) });
-        }
-
-        // Disconnect client in a final then block;
-        pro[pro.length] = pro[pro.length-1].then((result) => { client.end(); return result; });
-
-        // Add a catch block to capture exceptions, cleanly disconnect and return error object as rejected.
-        return pro[pro.length-1].catch((err) => {
-            client.end();
-            return Promise.reject(err);
-        });
+        return promise;
     }
 
     /**
@@ -239,21 +225,21 @@ class PgTestUtil {
      * @returns {Promise}
      */
     createDB(db, options) {
-        let config      = options || {},
-            encoding    = config.encoding || 'UTF8',
-            template    = config.template || 'template0',
-            drop        = config.drop || false,
-            sql = `CREATE DATABASE "${db}" WITH ENCODING = '${encoding}' TEMPLATE = "${template}";`;
+        let config      = options || {};
+        let encoding    = config.encoding || 'UTF8';
+        let template    = config.template || 'template0';
+        let drop        = config.drop || false;
+        let queries     = [];
 
         if (drop) {
-            return this.dropDB(db)
-                .then( () => { return this.executeSQL(sql, this.dbConfig.connectionDatabase); } );
-
-        } else {
-            return this.executeSQL(sql, this.dbConfig.connectionDatabase);
+            queries.push(sql.dropConnection(db));
+            queries.push(sql.dropDB(db));
         }
-    }
 
+        queries.push(sql.createDB(db, encoding, template));
+
+        return this.executeSQL(queries, this.dbConfig.connectionDatabase);
+    }
 
     /**
      * Drops given database. If there are other connected clients to this databse, also drops their connections
@@ -262,16 +248,15 @@ class PgTestUtil {
      * @return {Promise}
      */
     dropDB(db) {
-        let sql = [
-            `SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname='${db}';`,
-            `DROP DATABASE IF EXISTS "${db}";`
+        let queries = [
+            sql.dropConnection(db),
+            sql.dropDB(db)
         ];
-        return this.executeSQL(sql, this.dbConfig.connectionDatabase);
+        return this.executeSQL(queries, this.dbConfig.connectionDatabase);
     }
 }
 
 module.exports = PgTestUtil;
-
 </code></pre>
         </article>
     </section>
@@ -284,7 +269,7 @@ module.exports = PgTestUtil;
         
 
         <footer>
-            Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0-dev</a> on Thu Oct 29 2015 13:05:54 GMT+0200 (EET)
+            Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0-dev</a> on Sat Oct 31 2015 20:21:04 GMT+0200 (EET)
         </footer>
     </div>
 </div>

@@ -1,25 +1,31 @@
 /*jslint node: true, nomen: true */
 /*global describe, it, before, beforeEach, after, afterEach */
+'use strict';
 
-var chai            = require("chai"),
-    chaiAsPromised  = require("chai-as-promised"),
-    PgTestUtil      = require('../index');
+var chai            = require("chai");
+var chaiAsPromised  = require("chai-as-promised");
+var path            = require('path');
+var PgTestUtil      = require('../index');
 
-var db              = 'pg-test-util-test-01',
-    pgUtil          = new PgTestUtil({ user: 'user', password: 'password', defaultDatabase: db }),
-    should          = chai.should(),
-    assert          = chai.assert;
+var db              = 'pg-test-util-test-012736';
+var credentials = require('./sql/credentials.js');
+var pgUtil          = new PgTestUtil({ user: credentials.user, password: credentials.password, host: credentials.host, port: credentials.port, defaultDatabase: db });
+var should          = chai.should();
+var assert          = chai.assert;
 
 
 chai.use(chaiAsPromised);
 
 after(function() {
-    "use strict";
     return pgUtil.dropDB(db);
 });
 
-describe('App', function () {
-    "use strict";
+describe('Promises with functions', function () {
+    it('should create and drop multiple times', function() {
+        return pgUtil.createDB(db, { drop: true })
+            .then(() => { return pgUtil.createDB(db, { drop: true }); })
+            .then(() => { return pgUtil.dropDB(db); });
+    });
 
     it('should create db with default values', function() {
         return pgUtil.createDB(db, { drop: false })
@@ -43,4 +49,3 @@ describe('App', function () {
             .should.be.rejectedWith('database "' + db + '" already exists');
     });
 });
-
