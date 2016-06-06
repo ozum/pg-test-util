@@ -77,7 +77,7 @@ Executes sql script file on a given database.
 | file | <code>string</code> | Path of the SQL file to be executed. |
 | [db] | <code>string</code> | Database name. Uses default value from configuration if no value is given. |
 | [options] | <code>Object</code> | Execution options. |
-| [options.disableTriggers] | <code>boolean</code> | Disables all triggers and foreign key checks. Useful for loading backup/replicated date. |
+| [options.disableTriggers] | <code>boolean</code> | Disables all triggers and foreign key checks. Useful for loading backup/replicated data. |
 
 <a name="PgTestUtil+createDB"></a>
 
