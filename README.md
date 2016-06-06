@@ -1,4 +1,5 @@
 <a name="PgTestUtil"></a>
+
 ## PgTestUtil
 Helper class and methods to use in tests using PostgreSQL database. Primary focus of this class is not speed.
 First priority is given to do operations such as create database, drop database etc. As a result this class
@@ -15,13 +16,14 @@ and drop privileges and connect to "template1" database.
 **Kind**: global class  
 
 * [PgTestUtil](#PgTestUtil)
-  * [new PgTestUtil([dbConfig])](#new_PgTestUtil_new)
-  * [.executeSQL(sql, [db])](#PgTestUtil+executeSQL) ⇒ <code>Promise.&lt;T&gt;</code>
-  * [.executeSQLFile(file, [db])](#PgTestUtil+executeSQLFile) ⇒ <code>Promise</code>
-  * [.createDB(db, [options])](#PgTestUtil+createDB) ⇒ <code>Promise</code>
-  * [.dropDB(db)](#PgTestUtil+dropDB) ⇒ <code>Promise</code>
+    * [new PgTestUtil([dbConfig])](#new_PgTestUtil_new)
+    * [.executeSQL(sql, [db])](#PgTestUtil+executeSQL) ⇒ <code>Promise.&lt;T&gt;</code>
+    * [.executeSQLFile(file, [db], [options])](#PgTestUtil+executeSQLFile) ⇒ <code>Promise</code>
+    * [.createDB(db, [options])](#PgTestUtil+createDB) ⇒ <code>Promise</code>
+    * [.dropDB(db)](#PgTestUtil+dropDB) ⇒ <code>Promise</code>
 
 <a name="new_PgTestUtil_new"></a>
+
 ### new PgTestUtil([dbConfig])
 
 | Param | Type | Default | Description |
@@ -51,6 +53,7 @@ pgUtil.createDB('testdb', { drop: true })
 .catch(function(err) { console.log(err); });
 ```
 <a name="PgTestUtil+executeSQL"></a>
+
 ### pgTestUtil.executeSQL(sql, [db]) ⇒ <code>Promise.&lt;T&gt;</code>
 Connects to database, executes a single SQL query or a series of SQL queries against given databse,
 then disconnects from it.
@@ -63,7 +66,8 @@ then disconnects from it.
 | [db] | <code>string</code> | Database name to query against. Uses default value from configuration if no value is given. |
 
 <a name="PgTestUtil+executeSQLFile"></a>
-### pgTestUtil.executeSQLFile(file, [db]) ⇒ <code>Promise</code>
+
+### pgTestUtil.executeSQLFile(file, [db], [options]) ⇒ <code>Promise</code>
 Executes sql script file on a given database.
 
 **Kind**: instance method of <code>[PgTestUtil](#PgTestUtil)</code>  
@@ -72,8 +76,11 @@ Executes sql script file on a given database.
 | --- | --- | --- |
 | file | <code>string</code> | Path of the SQL file to be executed. |
 | [db] | <code>string</code> | Database name. Uses default value from configuration if no value is given. |
+| [options] | <code>Object</code> | Execution options. |
+| [options.disableTriggers] | <code>boolean</code> | Disables all triggers and foreign key checks. Useful for loading backup/replicated date. |
 
 <a name="PgTestUtil+createDB"></a>
+
 ### pgTestUtil.createDB(db, [options]) ⇒ <code>Promise</code>
 Creates a new db with given name from PostgreSQL template database.
 
@@ -88,6 +95,7 @@ Creates a new db with given name from PostgreSQL template database.
 | [options.drop] | <code>boolean</code> | <code>false</code> | Drop database if exists. |
 
 <a name="PgTestUtil+dropDB"></a>
+
 ### pgTestUtil.dropDB(db) ⇒ <code>Promise</code>
 Drops given database. If there are other connected clients to this databse, also drops their connections
 to prevent this error from PostgreSQL: database "..." is being accessed by other users.
@@ -103,7 +111,9 @@ to prevent this error from PostgreSQL: database "..." is being accessed by other
 
 History & Notes
 ================
-####
+#### 1.3.0 / 2016-06-06
+* Added: `options` parameter added to `executeSQLFile` method.
+* Added: SQL files can be executed all triggers and foreign key constraints disabled. (disableTriggers option)
 
 #### 1.2.0 / 2015-09-21
 * connectionDatabase parameter added to constructor for an additional database to connect while creating and dropping
