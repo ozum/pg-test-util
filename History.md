@@ -3,6 +3,9 @@
 
 History & Notes
 ================
+#### 1.3.3 / 2016-06-27
+* Fixed: `optional` dependency removed.
+
 #### 1.3.0 / 2016-06-06
 * Added: `options` parameter added to `executeSQLFile` method.
 * Added: SQL files can be executed all triggers and foreign key constraints disabled. (disableTriggers option)
