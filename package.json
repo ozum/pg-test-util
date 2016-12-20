@@ -20,14 +20,14 @@
     "test"
   ],
   "dependencies": {
-    "lodash": "^3.10.1",
-    "pg": "^4.4.1"
+    "lodash": "^4.x",
+    "pg": "^6.x"
   },
   "devDependencies": {
-    "chai": "^3.2.0",
-    "chai-as-promised": "^5.1.0",
-    "mocha": "^2.5.3",
-    "zoo-jsdoc": "^0.0.1"
+    "chai": "^3.x",
+    "chai-as-promised": "^6.x",
+    "mocha": "^3.x",
+    "zoo-jsdoc": "^x"
   },
   "author": "Özüm Eldoğan",
   "license": "MIT",
