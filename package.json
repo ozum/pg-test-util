@@ -1,48 +1,89 @@
 {
   "name": "pg-test-util",
+  "author": "Özüm Eldoğan",
+  "license": "MIT",
   "version": "1.3.3",
   "description": "Helper methods for PostgreSQL to use in tests.",
-  "main": "index.js",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "files": [
+    "lib",
+    "bin"
+  ],
   "repository": {
     "type": "git",
     "url": ""
   },
   "scripts": {
-    "test": "mocha",
-    "doc": "rm -R doc; jsdoc -c jsdoc-conf.json README-JSDOC.md;    rm -f README.md;    jsdoc2md --src \"lib/**/*\" >JSDOC.md;    cat README-JSDOC.md JSDOC.md History.md LICENSE > README.md;    rm -r -f JSDOC.md;"
+    "nodemon": "nodemon -r source-map-support/register",
+    "watch:doc": "nodemon -w README.hbs --exec \"npm run build:doc\" ",
+    "watch:js": "nodemon -w src/**/*.js --exec \"npm run build:js\" ",
+    "watch:ts": "tsc --watch",
+    "watch:test": "jest --watch --coverage",
+    "watch": "concurrently 'npm run watch:doc' 'npm run watch:ts' 'npm run watch:js'",
+    "build:ts": "rm -rf lib && tsc",
+    "build:js": "rsync -zarvm --include='*/' --include='*.js' --include='*.d.ts' --exclude='*' 'src/' 'lib'",
+    "build:doc": "jsdoc2md --no-cache --files 'src/**/*.ts' --configure jsdoc2md.json --template README.hbs > README.md && doctoc README.md",
+    "build": "npm run build:ts && npm run build:doc && npm run build:js",
+    "test": "cross-env NODE_ENV=test jest --coverage",
+    "check:type": "tsc --noemit",
+    "check": "npm test && npm run check:type && npm run lint && nsp check",
+    "lint": "tslint --project ./tsconfig.json --fix",
+    "precommit": "lint-staged && npm run check:type && nsp check && npm run build:doc && git add README.md",
+    "postversion": "git push && git push --tags && npm publish",
+    "prepublishOnly": "npm run build:ts && npm run build:js"
   },
   "engines": {
-    "node": ">=4.0.0"
+    "node": ">=9.0.0"
   },
   "keywords": [
     "pg",
     "postgresql",
     "test"
   ],
-  "dependencies": {
-    "lodash": "^4.x",
-    "pg": "^6.x"
-  },
   "devDependencies": {
-    "chai": "^3.x",
-    "chai-as-promised": "^6.x",
-    "mocha": "^3.x",
-    "zoo-jsdoc": "^x"
+    "@babel/cli": "^7.0.0-beta.40",
+    "@babel/core": "^7.0.0-beta.40",
+    "@babel/plugin-proposal-class-properties": "^7.0.0-beta.40",
+    "@babel/plugin-proposal-object-rest-spread": "^7.0.0-beta.40",
+    "@babel/preset-env": "^7.0.0-beta.40",
+    "@babel/preset-typescript": "^7.0.0-beta.40",
+    "@types/jest": "^22.1.3",
+    "@types/node": "^9.x",
+    "babel-plugin-syntax-object-rest-spread": "^6.13.0",
+    "concurrently": "^3.5.1",
+    "cross-env": "^5.x",
+    "doctoc": "^1.x",
+    "husky": "^0.14.3",
+    "jest": "^22.3.0",
+    "jsdoc": "^3.5.5",
+    "jsdoc-babel": "^0.4.0-alpha.0",
+    "jsdoc-to-markdown": "^4.x",
+    "lint-staged": "^7.0.0",
+    "nsp": "^3.x",
+    "prettier": "^1.10.2",
+    "source-map-support": "^0.x",
+    "ts-jest": "^22.0.4",
+    "ts-node": "^4.x",
+    "tslint": "^5.x",
+    "tslint-config-airbnb": "^5.x",
+    "tslint-config-prettier": "^1.8.0",
+    "typescript": "^2.x"
   },
-  "author": "Özüm Eldoğan",
-  "license": "MIT",
-  "jscsConfig": {
-    "validateQuoteMarks": {
-      "mark": "'",
-      "escape": true
-    },
-    "validateIndentation": 4,
-    "requireTrailingComma": false
-  },
-  "eslintConfig": {
-    "env": {
-      "node": true,
-      "es6": true
-    }
+  "dependencies": {
+    "@types/dotenv": "^4.0.2",
+    "@types/fs-extra": "^5.0.0",
+    "@types/knex": "^0.14.7",
+    "@types/pg": "^7.4.4",
+    "@types/pg-escape": "^0.2.0",
+    "@types/verror": "^1.10.3",
+    "dotenv": "^5.0.0",
+    "fs-extra": "^5.0.0",
+    "internal-data": "^0.3.1",
+    "knex": "^0.14.3",
+    "pg": "^7.x",
+    "pg-connection-string": "^2.0.0",
+    "pg-escape": "^0.2.0",
+    "verror": "^1.10.0"
   }
 }

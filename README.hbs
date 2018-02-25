@@ -1,0 +1,100 @@
+<!-- DO NOT EDIT README.md (It will be overridden by README.hbs) -->
+
+# pg-test-util
+
+Utility library for administrative database operations.
+
+<!-- START doctoc -->
+<!-- END doctoc -->
+
+# Description
+
+Utility library for creating, dropping, truncating and similar operations related to PostgreSQL.
+It uses `knex` for individual databases, and `pg` driver for disconnect connection.
+
+It is ideal to use in unit tests. Also has typescript support.
+
+# Synopsis
+
+```
+import PgTestUtil from 'pg-test-util';
+const PgTestUtil = require('pg-test-util').default;
+
+const pgTestUtil = new PgTestUtil();
+const db = pgTestUtil.createDatabase('my_database');
+```
+
+## Single Database
+
+```js
+import PgTestUtil from 'pg-test-util';
+
+const pgTestUtil = new PgTestUtil();                  // Uses connection string from: process.env.PG_TEST_CONNECTION_STRING
+
+db = pgTestUtil.createDatabase();                     // No name given, so creates test-db-26352723 (number will be different)
+db.knex('books').insert({title: 'Master Node JS'});   // Get knex of database.
+db.truncate(['preData']);                             // Truncates all tables except preData
+pgTestUtil.dropDatabase();                            // Drops created db.
+```
+
+## Multiple Databases
+
+```js
+import PgTestUtil from 'pg-test-util';
+
+const pgTestUtil = new PgTestUtil({
+  baseName:         'my-project',             // Base name for auto generated names.
+  defaultDatabase:  'main-db',                // Database to use if no db name provided.
+  connection: {
+    connectionString: 'postgresql://user:password@127.0.0.1:5432/template1',
+  }
+});
+
+db1 = pgTestUtil.createDatabase();                  // No name given, so creates my-project-63526273 (number will be different)
+db2 = pgTestUtil.createDatabase({name: 'main-db'}); // Creates main-db, which is also defined as default database in constructor.
+db3 = pgTestUtil.createDatabase({name: 'some-db'}); // Creates some-db
+db2.truncate(['preData']);                          // Truncates all tables in main-db except preData
+db1.drop();                                         // Drops my-project-63526273 database. (Database#drop())
+pgTestUtil.dropDatabase();                          // Drops default db (main-db). (PgTestUtil#dropDatabase())
+pgTestUtil.dropDatabase('some-db');                 // Drops default db (some-db). (PgTestUtil#dropDatabase())
+```
+
+## Unit Tests (Jest, Mocha, Lab etc.)
+
+```js
+import PgTestUtil from 'pg-test-util';
+
+const pgTestUtil = new PgTestUtil();
+let knex;
+let database;
+
+beforeAll(async () => {
+  database = await pgTestUtil.createDatabase({
+    drop: true,
+    name: 'my-test-db',
+    file: `${__dirname}/__test-supplements__/create-db.sql`,
+  });
+
+  ({ knex } = database);
+});
+
+afterAll(async () => {
+  await pgTestUtil.dropAllDatabases(); // To inspect without drop use: await pgTestUtil.disconnectAll({ disconnect: true });
+});
+
+describe('csv', () => {
+  beforeEach(async () => {
+    await database.truncate();
+  });
+
+  it('should have expected records.', async () => {
+    const { count } = (await knex('MyYable').count('*'))[0];
+    expect(count).toEqual(5);
+  });
+});
+
+```
+
+
+# API
+{{>main~}}
