@@ -2,7 +2,7 @@
   "name": "pg-test-util",
   "author": "Özüm Eldoğan",
   "license": "MIT",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Helper methods for PostgreSQL to use in tests.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
