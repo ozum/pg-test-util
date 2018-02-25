@@ -3,17 +3,22 @@
   "author": "Özüm Eldoğan",
   "license": "MIT",
   "version": "2.0.2",
-  "description": "Helper methods for PostgreSQL to use in tests.",
+  "description": "Utility library for administrative database operations.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
     "lib",
     "bin"
   ],
-  "repository": {
-    "type": "git",
-    "url": ""
+  "repository": "github:ozum/pg-test-util",
+  "engines": {
+    "node": ">=9.0.0"
   },
+  "keywords": [
+    "pg",
+    "postgresql",
+    "test"
+  ],
   "scripts": {
     "nodemon": "nodemon -r source-map-support/register",
     "watch:doc": "nodemon -w README.hbs --exec \"npm run build:doc\" ",
@@ -33,14 +38,6 @@
     "postversion": "git push && git push --tags && npm publish",
     "prepublishOnly": "npm run build:ts && npm run build:js"
   },
-  "engines": {
-    "node": ">=9.0.0"
-  },
-  "keywords": [
-    "pg",
-    "postgresql",
-    "test"
-  ],
   "devDependencies": {
     "@babel/cli": "^7.0.0-beta.40",
     "@babel/core": "^7.0.0-beta.40",
