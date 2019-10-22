@@ -1,9 +1,0 @@
-{
-  "extends": "./tsconfig.json",
-  "compilerOptions": {
-    "target": "es5",
-    "lib": ["ES2015", "es6", "es7"]
-  },
-  "include": ["src/**/*.test.ts", "test/**/*"],
-  "exclude": ["node_modules", "lib", "**/__test-supplements__"]
-}

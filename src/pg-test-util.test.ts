@@ -1,32 +1,33 @@
-import * as Dotenv from "dotenv";
 import * as path from "path";
-import PgTestUtil from "./pg-test-util";
+import PgTestUtil from "./index";
 import { getConnectionObject } from "./helper";
 
-Dotenv.config();
+const connectionString = "postgresql://user:password@127.0.0.1:5432/template1"; // process.env.PG_TEST_CONNECTION_STRING
+const connection = getConnectionObject({ connectionString });
 
 const files = {
-  build: path.join(__dirname, "__test_supplements__/sql/build-db.sql"),
-  data: path.join(__dirname, "__test_supplements__/sql/data.sql")
+  build: path.join(__dirname, "test-helper/sql/build-db.sql"),
+  data: path.join(__dirname, "test-helper/sql/data.sql"),
 };
-
 
 describe("pg-test-util", () => {
   describe("instance with disconnectAll", () => {
     let pgTestUtil: PgTestUtil;
 
     beforeAll(async () => {
-      pgTestUtil = new PgTestUtil({ disconnectOnError: true });
+      pgTestUtil = new PgTestUtil({ connection, disconnectOnError: true });
     });
 
     afterAll(async () => {
       await pgTestUtil.dropAll();
     });
 
+    it("should throw if connection info is missing", () => {
+      expect(() => new PgTestUtil()).toThrow("Connection configuration does not have all required info.");
+    });
+
     it("should disconnect all on error", async () => {
-      await expect(pgTestUtil.createDatabase({ name: "template0" })).rejects.toThrow(
-        /database "template0" already exists/
-      );
+      await expect(pgTestUtil.createDatabase({ name: "template0" })).rejects.toThrow(/database "template0" already exists/);
     });
 
     it("should survive disconnect even if not connected", async () => {
@@ -52,7 +53,7 @@ describe("pg-test-util", () => {
     let pgTestUtil: PgTestUtil;
 
     beforeAll(async () => {
-      pgTestUtil = new PgTestUtil();
+      pgTestUtil = new PgTestUtil({ connection });
     });
 
     afterAll(async () => {
@@ -86,9 +87,7 @@ describe("pg-test-util", () => {
     });
 
     it("should throw error if query causes error", async () => {
-      await expect(pgTestUtil.createDatabase({ name: "template0" })).rejects.toThrow(
-        /database "template0" already exists/
-      );
+      await expect(pgTestUtil.createDatabase({ name: "template0" })).rejects.toThrow(/database "template0" already exists/);
     });
   });
 
@@ -97,7 +96,7 @@ describe("pg-test-util", () => {
 
     beforeAll(async () => {
       pgTestUtil = new PgTestUtil({
-        connection: { database: "wrong-databasse-2y363", user: "user", password: "password" }
+        connection: { database: "wrong-databasse-2y363", user: "user", password: "password" },
       });
     });
 
@@ -106,18 +105,14 @@ describe("pg-test-util", () => {
     });
 
     it("should throw trying to connect to master database", async () => {
-      await expect(pgTestUtil.createDatabase()).rejects.toThrow(
-        /Cannot connect to master database: wrong-databasse-2y363/
-      );
+      await expect(pgTestUtil.createDatabase()).rejects.toThrow(/Cannot connect to master database: wrong-databasse-2y363/);
     });
   });
 
   describe("instance with custom config", () => {
     let pgTestUtil: PgTestUtil;
 
-    const { user, database, password } = getConnectionObject({
-      connectionString: process.env.PG_TEST_CONNECTION_STRING
-    });
+    const { user, database, password } = getConnectionObject({ connectionString });
 
     beforeAll(async () => {
       pgTestUtil = new PgTestUtil({
@@ -125,7 +120,7 @@ describe("pg-test-util", () => {
         connection: { database, user, password },
         defaultDatabase: "ptu-custom-default",
         dropOnlyCreated: true,
-        disconnectOnError: false
+        disconnectOnError: false,
       });
     });
 
@@ -151,9 +146,7 @@ describe("pg-test-util", () => {
     });
 
     it("should throw if dropDatabase method fails", async () => {
-      await expect(pgTestUtil.dropDatabase("template0", { dropOnlyCreated: false })).rejects.toThrow(
-        /Cannot drop template0/
-      );
+      await expect(pgTestUtil.dropDatabase("template0", { dropOnlyCreated: false })).rejects.toThrow(/Cannot drop template0/);
     });
 
     it("should create database with non-default configuration", async () => {
@@ -164,7 +157,7 @@ describe("pg-test-util", () => {
         sql: "INSERT INTO member (name) VALUES ('Lisa')",
         template: "template1",
         encoding: "UTF-8",
-        drop: true
+        drop: true,
       });
       const queryResult = await customDb.query("SELECT name FROM member WHERE name = 'Lisa'");
       expect(queryResult[0]).toEqual({ name: "Lisa" });
@@ -183,9 +176,7 @@ describe("pg-test-util", () => {
     });
 
     it("should throw for non-existing database", async () => {
-      await expect(pgTestUtil.getDatabase().query("SELECT 1 AS stub")).rejects.toThrow(
-        /database "ptu-custom-default" does not exist/
-      );
+      await expect(pgTestUtil.getDatabase().query("SELECT 1 AS stub")).rejects.toThrow(/database "ptu-custom-default" does not exist/);
     });
 
     it("should get default database", async () => {
@@ -197,7 +188,7 @@ describe("pg-test-util", () => {
     it("should create user", async () => {
       await pgTestUtil.createUser("ptu", "1234");
       const users = await pgTestUtil.getUsers();
-      const userNames = users.map(user => user.name);
+      const userNames = users.map(u => u.name);
 
       expect(userNames.includes("ptu")).toBe(true);
     });
@@ -205,7 +196,7 @@ describe("pg-test-util", () => {
     it("should drop user", async () => {
       await pgTestUtil.dropUser("ptu");
       const users = await pgTestUtil.getUsers();
-      const userNames = users.map(user => user.name);
+      const userNames = users.map(u => u.name);
 
       expect(userNames.includes("ptu")).toBe(false);
     });
@@ -243,12 +234,10 @@ describe("pg-test-util", () => {
       await pgTestUtil.dropAll({ disconnect: false });
 
       const users = await pgTestUtil.getUsers();
-      const userNames = users.map(user => user.name);
+      const userNames = users.map(u => u.name);
 
       expect(userNames.includes("ptu-all")).toBe(false);
-      await expect(pgTestUtil.getDatabase("ptu-all").query("SELECT 1 AS stub")).rejects.toThrow(
-        /database "ptu-all" does not exist/
-      );
+      await expect(pgTestUtil.getDatabase("ptu-all").query("SELECT 1 AS stub")).rejects.toThrow(/database "ptu-all" does not exist/);
     });
   });
 });

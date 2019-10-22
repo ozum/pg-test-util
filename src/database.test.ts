@@ -1,26 +1,24 @@
-import * as Dotenv from "dotenv";
+import * as path from "path";
 import PgTestUtil from "./pg-test-util";
 import Database from "./database";
 import { getConnectionObject } from "./helper";
-import * as path from "path";
 
-Dotenv.config();
+const connectionString = "postgresql://user:password@127.0.0.1:5432/template1"; // process.env.PG_TEST_CONNECTION_STRING
 
 const files = {
-  build: path.join(__dirname, "__test_supplements__/sql/build-db.sql"),
-  data: path.join(__dirname, "__test_supplements__/sql/data.sql"),
-  error: path.join(__dirname, "__test_supplements__/sql/error.sql")
+  build: path.join(__dirname, "test-helper/sql/build-db.sql"),
+  data: path.join(__dirname, "test-helper/sql/data.sql"),
+  error: path.join(__dirname, "test-helper/sql/error.sql"),
 };
 
 let db: { [index: string]: Database };
-
-const connection = getConnectionObject({ connectionString: process.env.PG_TEST_CONNECTION_STRING });
-const pgTestUtil = new PgTestUtil();
+const connection = getConnectionObject({ connectionString });
+const pgTestUtil = new PgTestUtil({ connection });
 
 beforeAll(async () => {
   db = {
     common: await pgTestUtil.createDatabase({ name: "ptudb-query", drop: true, file: files.build }),
-    empty: await pgTestUtil.createDatabase({ name: "ptudb-empty", drop: true })
+    empty: await pgTestUtil.createDatabase({ name: "ptudb-empty", drop: true }),
   };
 });
 
@@ -28,19 +26,13 @@ afterAll(async () => {
   await pgTestUtil.dropAll();
 });
 
-
 describe("database", () => {
-  it("should create Database object", async () => {
-    const tempDb = new Database();
-    expect(tempDb.constructor.name).toBe("Database");
-  });
-
   it("should survive disconnect even not connected", async () => {
     const tempDb = new Database({
       connection: { ...connection, database: "template1" },
       preError: (): void => {},
-      drop: async ():Promise<void> => {},
-      schemas: ["public"]
+      drop: async (): Promise<void> => {},
+      schemas: ["public"],
     });
 
     await tempDb.disconnect();

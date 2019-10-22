@@ -1,32 +1,17 @@
-<!-- DO NOT EDIT README.md (It will be overridden by README.hbs) -->
-
-# pg-test-util
-
-Utility library for administrative database operations.
-
-<!-- START doctoc -->
-<!-- END doctoc -->
-
-# Description
-
-Utility library for creating, dropping, truncating and similar operations related to PostgreSQL.
-It uses `knex` for individual databases, and `pg` driver for master connection and administrative purposes.
-
-It is ideal to use in unit tests. Also has typescript support.
+{% include "module-header" %}
 
 # Synopsis
 
-```
+```ts
 import PgTestUtil from 'pg-test-util';
-const PgTestUtil = require('pg-test-util').default;
 
-const pgTestUtil = new PgTestUtil();
+const pgTestUtil = new PgTestUtil({ database: "db", user: "user", password: "password" });
 const db = pgTestUtil.createDatabase('my_database');
 ```
 
 ## Single Database
 
-```js
+```ts
 import PgTestUtil from 'pg-test-util';
 
 const pgTestUtil = new PgTestUtil();                  // Uses connection string from: process.env.PG_TEST_CONNECTION_STRING
@@ -39,7 +24,7 @@ pgTestUtil.dropDatabase();                            // Drops created db.
 
 ## Multiple Databases
 
-```js
+```ts
 import PgTestUtil from 'pg-test-util';
 
 const pgTestUtil = new PgTestUtil({
@@ -61,7 +46,7 @@ pgTestUtil.dropDatabase('some-db');                 // Drops default db (some-db
 
 ## Unit Tests (Jest, Mocha, Lab etc.)
 
-```js
+```ts
 import PgTestUtil from 'pg-test-util';
 
 const pgTestUtil = new PgTestUtil();
@@ -95,6 +80,16 @@ describe('csv', () => {
 
 ```
 
+# Details
+
+Utility library for creating, dropping, truncating and similar operations related to PostgreSQL.
+It uses `knex` for individual databases, and `pg` driver for master connection and administrative purposes.
+
+It is ideal to use in unit tests. Also has typescript support.
+
+
 
 # API
-{{>main~}}
+
+{% include "api.md" %}
+
