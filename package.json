@@ -1,6 +1,6 @@
 {
   "name": "pg-test-util",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "Utility library for administrative database operations.",
   "keywords": [
     "pg",
