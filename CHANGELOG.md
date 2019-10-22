@@ -1,8 +1,8 @@
-<!-- Titles: Added, Changed, Deprecated, Removed, Fixed, Security -->
+# Changelog
 
-## Change Log
+All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-This project adheres to [Semantic Versioning](http://semver.org/).
+### [2.0.5](https://github.com/ozum/pg-test-util/compare/v2.0.4...v2.0.5) (2019-10-22)
 
 ### 2.0.0 - 2018-02-25
 
