@@ -34,8 +34,10 @@ module.exports = {
     "no-dupe-class-members": "off", // Prevents method overload in TypeScript, and TypeScript already checks duplicates.
     "no-unused-vars": "off", // @typescript-eslint/recommended has same rule
     "no-underscore-dangle": "off",
+    "import/prefer-default-export": "off",
     "@typescript-eslint/explicit-function-return-type": ["warn", { allowExpressions: true, allowTypedFunctionExpressions: true }],
     "@typescript-eslint/no-explicit-any": "off",
+    "import/extensions": ["error", "ignorePackages", { "js": "never", "mjs": "never", "jsx": "never", "ts": "never", "tsx": "never" }]
   },
   overrides: [
     {

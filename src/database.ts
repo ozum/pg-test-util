@@ -40,6 +40,9 @@ export default class Database {
   /** knex object to use in queries. */
   private _knex?: knex;
 
+  /** Whether this database is disconnected explicitly. */
+  private _isDisconnected = false;
+
   /** Function to execute before throwing error.  */
   private preError: () => void;
 
@@ -78,6 +81,7 @@ export default class Database {
         throw new VError(e, `Cannot disconnect from '${this.name}' database`);
       }
     }
+    this._isDisconnected = true;
   }
 
   /** Clears tables and sequences cache. */
@@ -147,7 +151,7 @@ export default class Database {
 
     try {
       await Promise.all(
-        sequences.map(seq =>
+        sequences.map((seq) =>
           this.knex.raw("SELECT setval('??.??', (SELECT COALESCE((SELECT ?? + 1 FROM ?? ORDER BY ?? DESC LIMIT 1), 1)), false)", [
             seq.schema,
             seq.sequence,
@@ -172,11 +176,11 @@ export default class Database {
    */
   async truncate(ignoreTables: Array<string> = []): Promise<void> {
     const tables = await this.getTables();
-    const ignoreTablesWithSchema = ignoreTables.map(table => (table.includes(".") ? table : `public.${table}`));
+    const ignoreTablesWithSchema = ignoreTables.map((table) => (table.includes(".") ? table : `public.${table}`));
 
     const filteredTables = tables
-      .filter(table => !ignoreTablesWithSchema.includes(`${table.schema}.${table.table}`))
-      .map(table => `"${table.schema}"."${table.table}"`)
+      .filter((table) => !ignoreTablesWithSchema.includes(`${table.schema}.${table.table}`))
+      .map((table) => `"${table.schema}"."${table.table}"`)
       .join(", ");
 
     try {
@@ -214,6 +218,11 @@ export default class Database {
    * @returns result rows of the SQL query. If multiple queries are given results are concatenated into single array.
    */
   async query<T extends any>(sql: string | Array<string>): Promise<T[]> {
+    if (this._isDisconnected) {
+      await this.preError();
+      throw new Error("Database is explicitly disconnected by this library.");
+    }
+
     if (!sql) {
       await this.preError();
       throw new Error("Either 'sql' or 'file' parameter must be present.");

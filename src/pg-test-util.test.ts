@@ -89,6 +89,12 @@ describe("pg-test-util", () => {
     it("should throw error if query causes error", async () => {
       await expect(pgTestUtil.createDatabase({ name: "template0" })).rejects.toThrow(/database "template0" already exists/);
     });
+
+    it("should throw if explicitly disconnected database is queried.", async () => {
+      const db = await pgTestUtil.createDatabase({ name: "pg-test-util-explicit-disconnect" });
+      await db.disconnect();
+      await expect(() => db.query("SELECT 1")).rejects.toThrow("Database is explicitly disconnected");
+    });
   });
 
   describe("instance with wrong master connection", () => {
@@ -188,7 +194,7 @@ describe("pg-test-util", () => {
     it("should create user", async () => {
       await pgTestUtil.createUser("ptu", "1234");
       const users = await pgTestUtil.getUsers();
-      const userNames = users.map(u => u.name);
+      const userNames = users.map((u) => u.name);
 
       expect(userNames.includes("ptu")).toBe(true);
     });
@@ -196,7 +202,7 @@ describe("pg-test-util", () => {
     it("should drop user", async () => {
       await pgTestUtil.dropUser("ptu");
       const users = await pgTestUtil.getUsers();
-      const userNames = users.map(u => u.name);
+      const userNames = users.map((u) => u.name);
 
       expect(userNames.includes("ptu")).toBe(false);
     });
@@ -219,8 +225,8 @@ describe("pg-test-util", () => {
     it("should copy database using Database object", async () => {
       const sourceDb = await pgTestUtil.createDatabase({ name: "ptu-source-2", file: files.build });
       const targetDb = await pgTestUtil.createDatabase({ name: "ptu-target-2", file: files.build });
-      await pgTestUtil.copyDatabase({ from: sourceDb, to: targetDb, drop: true });
-      const queryResult = await targetDb.query("SELECT count(*) AS stub FROM member");
+      const newTargetDB = await pgTestUtil.copyDatabase({ from: sourceDb, to: targetDb, drop: true });
+      const queryResult = await newTargetDB.query("SELECT count(*) AS stub FROM member");
       expect(queryResult[0]).toEqual({ stub: 0 });
     });
 
@@ -234,7 +240,7 @@ describe("pg-test-util", () => {
       await pgTestUtil.dropAll({ disconnect: false });
 
       const users = await pgTestUtil.getUsers();
-      const userNames = users.map(u => u.name);
+      const userNames = users.map((u) => u.name);
 
       expect(userNames.includes("ptu-all")).toBe(false);
       await expect(pgTestUtil.getDatabase("ptu-all").query("SELECT 1 AS stub")).rejects.toThrow(/database "ptu-all" does not exist/);
