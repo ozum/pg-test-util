@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.0.6](https://github.com/ozum/pg-test-util/compare/v2.0.4...v2.0.6) (2020-05-06)
+
+
+### Bug Fixes
+
+* disconnect when database is copied into new object ([196c557](https://github.com/ozum/pg-test-util/commit/196c5573a01dd9e70071960504920c999f4bc63d))
+
 ### [2.0.5](https://github.com/ozum/pg-test-util/compare/v2.0.4...v2.0.5) (2019-10-22)
 
 ### 2.0.0 - 2018-02-25
