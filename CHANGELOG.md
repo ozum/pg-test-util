@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.0.7](https://github.com/ozum/pg-test-util/compare/v2.0.4...v2.0.7) (2020-05-26)
+
+
+### Bug Fixes
+
+* disconnect when database is copied into new object ([196c557](https://github.com/ozum/pg-test-util/commit/196c5573a01dd9e70071960504920c999f4bc63d))
+* fix db.truncate on empty database ([66ad433](https://github.com/ozum/pg-test-util/commit/66ad433042af0b7ef0bf7a73f48ed7e678907762)), closes [#2](https://github.com/ozum/pg-test-util/issues/2)
+
 ### [2.0.6](https://github.com/ozum/pg-test-util/compare/v2.0.4...v2.0.6) (2020-05-06)
 
 

@@ -180,7 +180,7 @@ It is ideal to use in unit tests. Also has typescript support.
 
 Ƭ **ConnectionConfig**: _object_
 
-_Defined in [types/index.ts:2](https://github.com/ozum/pg-test-util/blob/cb17248/src/types/index.ts#L2)_
+_Defined in [types/index.ts:2](https://github.com/ozum/pg-test-util/blob/fce7d11/src/types/index.ts#L2)_
 
 Connection information.
 
@@ -204,7 +204,7 @@ Connection information.
 
 Ƭ **SequenceInfo**: _object_
 
-_Defined in [types/index.ts:45](https://github.com/ozum/pg-test-util/blob/cb17248/src/types/index.ts#L45)_
+_Defined in [types/index.ts:45](https://github.com/ozum/pg-test-util/blob/fce7d11/src/types/index.ts#L45)_
 
 #### Type declaration:
 
@@ -222,7 +222,7 @@ _Defined in [types/index.ts:45](https://github.com/ozum/pg-test-util/blob/cb1724
 
 Ƭ **TableInfo**: _object_
 
-_Defined in [types/index.ts:38](https://github.com/ozum/pg-test-util/blob/cb17248/src/types/index.ts#L38)_
+_Defined in [types/index.ts:38](https://github.com/ozum/pg-test-util/blob/fce7d11/src/types/index.ts#L38)_
 
 Type to store table details.
 
@@ -238,7 +238,7 @@ Type to store table details.
 
 ▸ **isConnectionConfigWithObject**(`config`: any): _config is ConnectionConfigWithObject_
 
-_Defined in [helper.ts:5](https://github.com/ozum/pg-test-util/blob/cb17248/src/helper.ts#L5)_
+_Defined in [helper.ts:5](https://github.com/ozum/pg-test-util/blob/fce7d11/src/helper.ts#L5)_
 
 **Parameters:**
 
@@ -268,7 +268,7 @@ Database class is used for tasks related to individual database such as connecti
 
 • **drop**: _function_
 
-_Defined in [database.ts:50](https://github.com/ozum/pg-test-util/blob/cb17248/src/database.ts#L50)_
+_Defined in [database.ts:50](https://github.com/ozum/pg-test-util/blob/fce7d11/src/database.ts#L50)_
 
 Function to drop this database. `DROP DATABSE` sql query must be executed from another database, so this function should be passed to constructor.
 
@@ -282,7 +282,7 @@ Function to drop this database. `DROP DATABSE` sql query must be executed from a
 
 • **get isConnected**(): _boolean_
 
-_Defined in [database.ts:58](https://github.com/ozum/pg-test-util/blob/cb17248/src/database.ts#L58)_
+_Defined in [database.ts:58](https://github.com/ozum/pg-test-util/blob/fce7d11/src/database.ts#L58)_
 
 Whether database is connected or not.
 
@@ -294,7 +294,7 @@ Whether database is connected or not.
 
 • **get knex**(): _[knex](#knex)_
 
-_Defined in [database.ts:63](https://github.com/ozum/pg-test-util/blob/cb17248/src/database.ts#L63)_
+_Defined in [database.ts:63](https://github.com/ozum/pg-test-util/blob/fce7d11/src/database.ts#L63)_
 
 `knex` object for database. It may be used to build queries easily.
 
@@ -306,7 +306,7 @@ _Defined in [database.ts:63](https://github.com/ozum/pg-test-util/blob/cb17248/s
 
 • **get name**(): _string_
 
-_Defined in [database.ts:53](https://github.com/ozum/pg-test-util/blob/cb17248/src/database.ts#L53)_
+_Defined in [database.ts:53](https://github.com/ozum/pg-test-util/blob/fce7d11/src/database.ts#L53)_
 
 Database name.
 
@@ -318,7 +318,7 @@ Database name.
 
 ▸ **disconnect**(): _Promise‹void›_
 
-_Defined in [database.ts:72](https://github.com/ozum/pg-test-util/blob/cb17248/src/database.ts#L72)_
+_Defined in [database.ts:72](https://github.com/ozum/pg-test-util/blob/fce7d11/src/database.ts#L72)_
 
 Disconnects from database.
 
@@ -330,7 +330,7 @@ Disconnects from database.
 
 ▸ **getSequences**(): _Promise‹[SequenceInfo](#sequenceinfo)[]›_
 
-_Defined in [database.ts:121](https://github.com/ozum/pg-test-util/blob/cb17248/src/database.ts#L121)_
+_Defined in [database.ts:121](https://github.com/ozum/pg-test-util/blob/fce7d11/src/database.ts#L121)_
 
 Returns sequences from database. Uses cache for fast results. Use `refresh()` method to refresh the cache.
 
@@ -344,7 +344,7 @@ information about sequences
 
 ▸ **getTables**(): _Promise‹[TableInfo](#tableinfo)[]›_
 
-_Defined in [database.ts:98](https://github.com/ozum/pg-test-util/blob/cb17248/src/database.ts#L98)_
+_Defined in [database.ts:98](https://github.com/ozum/pg-test-util/blob/fce7d11/src/database.ts#L98)_
 
 Returns tables from database. Uses cache for fast results. Use `refresh()` method to refresh the cache.
 
@@ -358,7 +358,7 @@ information about tables.
 
 ▸ **query**<**T**>(`sql`: string | Array‹string›): _Promise‹T[]›_
 
-_Defined in [database.ts:220](https://github.com/ozum/pg-test-util/blob/cb17248/src/database.ts#L220)_
+_Defined in [database.ts:221](https://github.com/ozum/pg-test-util/blob/fce7d11/src/database.ts#L221)_
 
 Executes given SQL and returns results.
 
@@ -384,7 +384,7 @@ result rows of the SQL query. If multiple queries are given results are concaten
 
 ▸ **queryFile**<**T**>(`file`: string): _Promise‹T[]›_
 
-_Defined in [database.ts:203](https://github.com/ozum/pg-test-util/blob/cb17248/src/database.ts#L203)_
+_Defined in [database.ts:204](https://github.com/ozum/pg-test-util/blob/fce7d11/src/database.ts#L204)_
 
 Reads and executes SQL in given file and returns results.
 
@@ -410,7 +410,7 @@ result rows of the SQL query.
 
 ▸ **refresh**(): _void_
 
-_Defined in [database.ts:88](https://github.com/ozum/pg-test-util/blob/cb17248/src/database.ts#L88)_
+_Defined in [database.ts:88](https://github.com/ozum/pg-test-util/blob/fce7d11/src/database.ts#L88)_
 
 Clears tables and sequences cache.
 
@@ -422,7 +422,7 @@ Clears tables and sequences cache.
 
 ▸ **truncate**(`ignoreTables`: Array‹string›): _Promise‹void›_
 
-_Defined in [database.ts:177](https://github.com/ozum/pg-test-util/blob/cb17248/src/database.ts#L177)_
+_Defined in [database.ts:177](https://github.com/ozum/pg-test-util/blob/fce7d11/src/database.ts#L177)_
 
 Truncates all tables in database.
 
@@ -440,7 +440,7 @@ Truncates all tables in database.
 
 ▸ **updateSequences**(): _Promise‹void›_
 
-_Defined in [database.ts:149](https://github.com/ozum/pg-test-util/blob/cb17248/src/database.ts#L149)_
+_Defined in [database.ts:149](https://github.com/ozum/pg-test-util/blob/fce7d11/src/database.ts#L149)_
 
 Set current value of sequence for each column of all tables based on record with maximum number. If there are no record in the table, the value will be set to 1.
 
@@ -465,7 +465,7 @@ drop database etc.
 
 \+ **new PgTestUtil**(`__namedParameters`: object): _[PgTestUtil](#classespgtestutilmd)_
 
-_Defined in [pg-test-util.ts:30](https://github.com/ozum/pg-test-util/blob/cb17248/src/pg-test-util.ts#L30)_
+_Defined in [pg-test-util.ts:30](https://github.com/ozum/pg-test-util/blob/fce7d11/src/pg-test-util.ts#L30)_
 
 Creates an instance of PgTestUtil.
 
@@ -489,7 +489,7 @@ Creates an instance of PgTestUtil.
 
 • **get defaultDatabaseName**(): _string_
 
-_Defined in [pg-test-util.ts:140](https://github.com/ozum/pg-test-util/blob/cb17248/src/pg-test-util.ts#L140)_
+_Defined in [pg-test-util.ts:140](https://github.com/ozum/pg-test-util/blob/fce7d11/src/pg-test-util.ts#L140)_
 
 Default database name which is determined by algorithm below:
 
@@ -507,7 +507,7 @@ Default database name which is determined by algorithm below:
 
 • **get isConnected**(): _boolean_
 
-_Defined in [pg-test-util.ts:128](https://github.com/ozum/pg-test-util/blob/cb17248/src/pg-test-util.ts#L128)_
+_Defined in [pg-test-util.ts:128](https://github.com/ozum/pg-test-util/blob/fce7d11/src/pg-test-util.ts#L128)_
 
 Connection status.
 
@@ -519,7 +519,7 @@ Connection status.
 
 ▸ **copyDatabase**(`__namedParameters`: object): _Promise‹[Database](#classesdatabasemd)›_
 
-_Defined in [pg-test-util.ts:334](https://github.com/ozum/pg-test-util/blob/cb17248/src/pg-test-util.ts#L334)_
+_Defined in [pg-test-util.ts:334](https://github.com/ozum/pg-test-util/blob/fce7d11/src/pg-test-util.ts#L334)_
 
 Copies a given database with a new name.
 
@@ -543,7 +543,7 @@ Copies a given database with a new name.
 
 ▸ **createDatabase**(`__namedParameters`: object): _Promise‹[Database](#classesdatabasemd)›_
 
-_Defined in [pg-test-util.ts:289](https://github.com/ozum/pg-test-util/blob/cb17248/src/pg-test-util.ts#L289)_
+_Defined in [pg-test-util.ts:289](https://github.com/ozum/pg-test-util/blob/fce7d11/src/pg-test-util.ts#L289)_
 
 Creates a database. If name is not provided generates a name using `baseName` from constructor and part of epoch time.
 
@@ -570,7 +570,7 @@ Creates a database. If name is not provided generates a name using `baseName` fr
 
 ▸ **createUser**(`user`: string, `password`: string): _Promise‹QueryResult›_
 
-_Defined in [pg-test-util.ts:224](https://github.com/ozum/pg-test-util/blob/cb17248/src/pg-test-util.ts#L224)_
+_Defined in [pg-test-util.ts:224](https://github.com/ozum/pg-test-util/blob/fce7d11/src/pg-test-util.ts#L224)_
 
 Creates a new database user.
 
@@ -591,7 +591,7 @@ query result.
 
 ▸ **disconnect**(): _Promise‹void›_
 
-_Defined in [pg-test-util.ts:187](https://github.com/ozum/pg-test-util/blob/cb17248/src/pg-test-util.ts#L187)_
+_Defined in [pg-test-util.ts:187](https://github.com/ozum/pg-test-util/blob/fce7d11/src/pg-test-util.ts#L187)_
 
 Disconnects from master database.
 
@@ -603,7 +603,7 @@ Disconnects from master database.
 
 ▸ **disconnectAll**(`__namedParameters`: object): _Promise‹void[]›_
 
-_Defined in [pg-test-util.ts:207](https://github.com/ozum/pg-test-util/blob/cb17248/src/pg-test-util.ts#L207)_
+_Defined in [pg-test-util.ts:207](https://github.com/ozum/pg-test-util/blob/fce7d11/src/pg-test-util.ts#L207)_
 
 Disconnects from all databases.
 
@@ -623,7 +623,7 @@ Disconnects from all databases.
 
 ▸ **dropAll**(`__namedParameters`: object): _Promise‹void›_
 
-_Defined in [pg-test-util.ts:419](https://github.com/ozum/pg-test-util/blob/cb17248/src/pg-test-util.ts#L419)_
+_Defined in [pg-test-util.ts:419](https://github.com/ozum/pg-test-util/blob/fce7d11/src/pg-test-util.ts#L419)_
 
 Drops all items created by this instance.
 
@@ -643,7 +643,7 @@ Drops all items created by this instance.
 
 ▸ **dropAllDatabases**(`__namedParameters`: object): _Promise‹void›_
 
-_Defined in [pg-test-util.ts:405](https://github.com/ozum/pg-test-util/blob/cb17248/src/pg-test-util.ts#L405)_
+_Defined in [pg-test-util.ts:405](https://github.com/ozum/pg-test-util/blob/fce7d11/src/pg-test-util.ts#L405)_
 
 Drops all databases created by this instance.
 
@@ -663,7 +663,7 @@ Drops all databases created by this instance.
 
 ▸ **dropAllUsers**(): _Promise‹void›_
 
-_Defined in [pg-test-util.ts:273](https://github.com/ozum/pg-test-util/blob/cb17248/src/pg-test-util.ts#L273)_
+_Defined in [pg-test-util.ts:273](https://github.com/ozum/pg-test-util/blob/fce7d11/src/pg-test-util.ts#L273)_
 
 Drops all users created by this instance.
 
@@ -675,7 +675,7 @@ Drops all users created by this instance.
 
 ▸ **dropDatabase**(`database`: string | [Database](#classesdatabasemd), `__namedParameters`: object): _Promise‹void›_
 
-_Defined in [pg-test-util.ts:366](https://github.com/ozum/pg-test-util/blob/cb17248/src/pg-test-util.ts#L366)_
+_Defined in [pg-test-util.ts:366](https://github.com/ozum/pg-test-util/blob/fce7d11/src/pg-test-util.ts#L366)_
 
 Drops given database. To ensure the task, drops all connections to the database beforehand.
 If `dropOnlyCreated` is true and database is not created by this instance, throws error.
@@ -700,7 +700,7 @@ is database name or `Database` instance to drop.
 
 ▸ **dropUser**(`user`: string, `__namedParameters`: object): _Promise‹void›_
 
-_Defined in [pg-test-util.ts:253](https://github.com/ozum/pg-test-util/blob/cb17248/src/pg-test-util.ts#L253)_
+_Defined in [pg-test-util.ts:253](https://github.com/ozum/pg-test-util/blob/fce7d11/src/pg-test-util.ts#L253)_
 
 Drops database user.
 
@@ -724,7 +724,7 @@ is user name to drop.
 
 ▸ **generateName**(): _string_
 
-_Defined in [pg-test-util.ts:158](https://github.com/ozum/pg-test-util/blob/cb17248/src/pg-test-util.ts#L158)_
+_Defined in [pg-test-util.ts:158](https://github.com/ozum/pg-test-util/blob/fce7d11/src/pg-test-util.ts#L158)_
 
 Generates a unique database name. Uniqueness of database name is not generated useing an advanced
 algorithm or technique. Simply epoch time is used.
@@ -739,7 +739,7 @@ unique database name
 
 ▸ **getDatabase**(`name`: string): _[Database](#classesdatabasemd)_
 
-_Defined in [pg-test-util.ts:170](https://github.com/ozum/pg-test-util/blob/cb17248/src/pg-test-util.ts#L170)_
+_Defined in [pg-test-util.ts:170](https://github.com/ozum/pg-test-util/blob/fce7d11/src/pg-test-util.ts#L170)_
 
 Returns `Database` instance object for given database name. Also connects to database if it is not connected.
 If no connection details are provided, default database is returned using same connection parameters as master database.
@@ -760,7 +760,7 @@ If no connection details are provided, default database is returned using same c
 
 ▸ **getDatabaseListFromServer**(): _Promise‹Array‹string››_
 
-_Defined in [pg-test-util.ts:115](https://github.com/ozum/pg-test-util/blob/cb17248/src/pg-test-util.ts#L115)_
+_Defined in [pg-test-util.ts:115](https://github.com/ozum/pg-test-util/blob/fce7d11/src/pg-test-util.ts#L115)_
 
 Fetches and returns list of databases from server.
 
@@ -774,7 +774,7 @@ list of databases.
 
 ▸ **getUsers**(): _Promise‹Array‹object››_
 
-_Defined in [pg-test-util.ts:241](https://github.com/ozum/pg-test-util/blob/cb17248/src/pg-test-util.ts#L241)_
+_Defined in [pg-test-util.ts:241](https://github.com/ozum/pg-test-util/blob/fce7d11/src/pg-test-util.ts#L241)_
 
 Returns database users.
 
@@ -802,7 +802,7 @@ Connection information which includes connection details, but not connection str
 
 • **connectionString**? : _undefined_
 
-_Defined in [types/index.ts:29](https://github.com/ozum/pg-test-util/blob/cb17248/src/types/index.ts#L29)_
+_Defined in [types/index.ts:29](https://github.com/ozum/pg-test-util/blob/fce7d11/src/types/index.ts#L29)_
 
 ---
 
@@ -810,7 +810,7 @@ _Defined in [types/index.ts:29](https://github.com/ozum/pg-test-util/blob/cb1724
 
 • **database**: _string_
 
-_Defined in [types/index.ts:30](https://github.com/ozum/pg-test-util/blob/cb17248/src/types/index.ts#L30)_
+_Defined in [types/index.ts:30](https://github.com/ozum/pg-test-util/blob/fce7d11/src/types/index.ts#L30)_
 
 ---
 
@@ -818,7 +818,7 @@ _Defined in [types/index.ts:30](https://github.com/ozum/pg-test-util/blob/cb1724
 
 • **host**? : _undefined | string_
 
-_Defined in [types/index.ts:33](https://github.com/ozum/pg-test-util/blob/cb17248/src/types/index.ts#L33)_
+_Defined in [types/index.ts:33](https://github.com/ozum/pg-test-util/blob/fce7d11/src/types/index.ts#L33)_
 
 ---
 
@@ -826,7 +826,7 @@ _Defined in [types/index.ts:33](https://github.com/ozum/pg-test-util/blob/cb1724
 
 • **password**: _string_
 
-_Defined in [types/index.ts:32](https://github.com/ozum/pg-test-util/blob/cb17248/src/types/index.ts#L32)_
+_Defined in [types/index.ts:32](https://github.com/ozum/pg-test-util/blob/fce7d11/src/types/index.ts#L32)_
 
 ---
 
@@ -834,7 +834,7 @@ _Defined in [types/index.ts:32](https://github.com/ozum/pg-test-util/blob/cb1724
 
 • **port**? : _undefined | number_
 
-_Defined in [types/index.ts:34](https://github.com/ozum/pg-test-util/blob/cb17248/src/types/index.ts#L34)_
+_Defined in [types/index.ts:34](https://github.com/ozum/pg-test-util/blob/fce7d11/src/types/index.ts#L34)_
 
 ---
 
@@ -842,7 +842,7 @@ _Defined in [types/index.ts:34](https://github.com/ozum/pg-test-util/blob/cb1724
 
 • **user**: _string_
 
-_Defined in [types/index.ts:31](https://github.com/ozum/pg-test-util/blob/cb17248/src/types/index.ts#L31)_
+_Defined in [types/index.ts:31](https://github.com/ozum/pg-test-util/blob/fce7d11/src/types/index.ts#L31)_
 
 <a name="interfacesconnectionconfigwithstringmd"></a>
 
@@ -862,7 +862,7 @@ Connection information which includes connection string and optional configurati
 
 • **connectionString**: _string_
 
-_Defined in [types/index.ts:19](https://github.com/ozum/pg-test-util/blob/cb17248/src/types/index.ts#L19)_
+_Defined in [types/index.ts:19](https://github.com/ozum/pg-test-util/blob/fce7d11/src/types/index.ts#L19)_
 
 ---
 
@@ -870,7 +870,7 @@ _Defined in [types/index.ts:19](https://github.com/ozum/pg-test-util/blob/cb1724
 
 • **database**? : _undefined | string_
 
-_Defined in [types/index.ts:20](https://github.com/ozum/pg-test-util/blob/cb17248/src/types/index.ts#L20)_
+_Defined in [types/index.ts:20](https://github.com/ozum/pg-test-util/blob/fce7d11/src/types/index.ts#L20)_
 
 ---
 
@@ -878,7 +878,7 @@ _Defined in [types/index.ts:20](https://github.com/ozum/pg-test-util/blob/cb1724
 
 • **host**? : _undefined | string_
 
-_Defined in [types/index.ts:23](https://github.com/ozum/pg-test-util/blob/cb17248/src/types/index.ts#L23)_
+_Defined in [types/index.ts:23](https://github.com/ozum/pg-test-util/blob/fce7d11/src/types/index.ts#L23)_
 
 ---
 
@@ -886,7 +886,7 @@ _Defined in [types/index.ts:23](https://github.com/ozum/pg-test-util/blob/cb1724
 
 • **password**? : _undefined | string_
 
-_Defined in [types/index.ts:22](https://github.com/ozum/pg-test-util/blob/cb17248/src/types/index.ts#L22)_
+_Defined in [types/index.ts:22](https://github.com/ozum/pg-test-util/blob/fce7d11/src/types/index.ts#L22)_
 
 ---
 
@@ -894,7 +894,7 @@ _Defined in [types/index.ts:22](https://github.com/ozum/pg-test-util/blob/cb1724
 
 • **port**? : _undefined | number_
 
-_Defined in [types/index.ts:24](https://github.com/ozum/pg-test-util/blob/cb17248/src/types/index.ts#L24)_
+_Defined in [types/index.ts:24](https://github.com/ozum/pg-test-util/blob/fce7d11/src/types/index.ts#L24)_
 
 ---
 
@@ -902,4 +902,4 @@ _Defined in [types/index.ts:24](https://github.com/ozum/pg-test-util/blob/cb1724
 
 • **user**? : _undefined | string_
 
-_Defined in [types/index.ts:21](https://github.com/ozum/pg-test-util/blob/cb17248/src/types/index.ts#L21)_
+_Defined in [types/index.ts:21](https://github.com/ozum/pg-test-util/blob/fce7d11/src/types/index.ts#L21)_
