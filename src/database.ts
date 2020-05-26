@@ -180,11 +180,12 @@ export default class Database {
 
     const filteredTables = tables
       .filter((table) => !ignoreTablesWithSchema.includes(`${table.schema}.${table.table}`))
-      .map((table) => `"${table.schema}"."${table.table}"`)
-      .join(", ");
+      .map((table) => `"${table.schema}"."${table.table}"`);
+
+    if (filteredTables.length === 0) return;
 
     try {
-      await this.knex.raw(`TRUNCATE ${filteredTables} RESTART IDENTITY`);
+      await this.knex.raw(`TRUNCATE ${filteredTables.join(", ")} RESTART IDENTITY`);
     } catch (e) {
       /* istanbul ignore next */
       await this.preError();

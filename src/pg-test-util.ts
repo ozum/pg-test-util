@@ -115,7 +115,7 @@ export default class PgTestUtil {
   async getDatabaseListFromServer(): Promise<Array<string>> {
     try {
       const result = await this.masterQuery("SELECT datname FROM pg_database");
-      return result.rows.map(row => row.datname);
+      return result.rows.map((row) => row.datname);
     } catch (e) {
       /* istanbul ignore next */
       await this.preError();
@@ -205,7 +205,7 @@ export default class PgTestUtil {
    * @param config.master whether to disconnect from master database.
    */
   async disconnectAll({ master = true } = {}): Promise<void[]> {
-    const promises: (Promise<void>)[] = Object.keys(this.databases).map(dbName => this.databases[dbName].disconnect());
+    const promises: Promise<void>[] = Object.keys(this.databases).map((dbName) => this.databases[dbName].disconnect());
 
     if (master) {
       promises.push(this.disconnect());
@@ -271,7 +271,7 @@ export default class PgTestUtil {
 
   /** Drops all users created by this instance. */
   async dropAllUsers(): Promise<void> {
-    await Promise.all(Object.keys(this.createdUsers).map(user => this.dropUser(user)));
+    await Promise.all(Object.keys(this.createdUsers).map((user) => this.dropUser(user)));
   }
 
   /**
@@ -403,7 +403,7 @@ export default class PgTestUtil {
    * @param config.disconnect is whether to disconnect from master database.
    */
   async dropAllDatabases({ disconnect = true } = {}): Promise<void> {
-    await Promise.all(this.createdDatabases.map(dbName => this.dropDatabase(dbName)));
+    await Promise.all(this.createdDatabases.map((dbName) => this.dropDatabase(dbName)));
 
     if (disconnect) {
       await this.disconnect();

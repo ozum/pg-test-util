@@ -30,12 +30,13 @@ describe("database", () => {
   it("should survive disconnect even not connected", async () => {
     const tempDb = new Database({
       connection: { ...connection, database: "template1" },
-      preError: (): void => {},
-      drop: async (): Promise<void> => {},
+      preError: (): undefined => undefined,
+      drop: async (): Promise<undefined> => undefined,
       schemas: ["public"],
     });
 
     await tempDb.disconnect();
+    expect(true).toBe(true);
   });
 
   it("should drop database", async () => {
@@ -115,12 +116,17 @@ describe("database", () => {
     await expect(tables).toEqual([]);
   });
 
+  it("should handle truncate on empty database.", async () => {
+    await db.empty.truncate();
+    await expect(true).toBe(true);
+  });
+
   it("should refresh cached items", async () => {
-    const tablesBefore = (await db.common.getTables()).map(row => `${row.schema}.${row.table}`);
+    const tablesBefore = (await db.common.getTables()).map((row) => `${row.schema}.${row.table}`);
     await db.common.query('CREATE TABLE "refresh_test_table"("id" Serial NOT NULL);');
-    const tablesAgain = (await db.common.getTables()).map(row => `${row.schema}.${row.table}`);
+    const tablesAgain = (await db.common.getTables()).map((row) => `${row.schema}.${row.table}`);
     db.common.refresh();
-    const tablesAfter = (await db.common.getTables()).map(row => `${row.schema}.${row.table}`);
+    const tablesAfter = (await db.common.getTables()).map((row) => `${row.schema}.${row.table}`);
 
     expect(tablesBefore.includes("public.refresh_test_table")).toBe(false);
     expect(tablesAgain.includes("public.refresh_test_table")).toBe(false);
