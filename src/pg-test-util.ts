@@ -333,11 +333,11 @@ export default class PgTestUtil {
    */
   async copyDatabase({
     from = this.defaultDatabaseName,
-    to,
+    to = this.generateName(),
     drop = false,
   }: {
     from?: string | Database;
-    to: string | Database;
+    to?: string | Database;
     drop?: boolean;
   }): Promise<Database> {
     const [fromName, toName] = [from instanceof Database ? from.name : from, to instanceof Database ? to.name : to];

@@ -201,7 +201,7 @@ export default class Database {
    * @param file is file to read SQL from.
    * @returns result rows of the SQL query.
    */
-  async queryFile<T extends any>(file: string): Promise<T[]> {
+  async queryFile<T extends any = any>(file: string): Promise<T[]> {
     try {
       const sql = await fs.readFile(file, { encoding: "utf8" });
       return this.query(sql);
@@ -218,7 +218,7 @@ export default class Database {
    * @param sql is sql query or array of sql queries to execute.
    * @returns result rows of the SQL query. If multiple queries are given results are concatenated into single array.
    */
-  async query<T extends any>(sql: string | Array<string>): Promise<T[]> {
+  async query<T extends any = any>(sql: string | Array<string>): Promise<T[]> {
     if (this._isDisconnected) {
       await this.preError();
       throw new Error("Database is explicitly disconnected by this library.");

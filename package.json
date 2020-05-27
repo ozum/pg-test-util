@@ -43,21 +43,20 @@
     "validate": "npm-run-all -p lint test"
   },
   "dependencies": {
-    "@types/fs-extra": "^8.0.1",
-    "@types/knex": "^0.16.1",
+    "@types/fs-extra": "^8.1.1",
     "@types/pg": "^7.11.2",
-    "@types/verror": "^1.10.3",
+    "@types/verror": "^1.10.4",
     "dotenv": "^8.2.0",
     "fs-extra": "^9.0.0",
     "knex": "^0.21.1",
-    "pg": "^8.0.3",
-    "pg-connection-string": "^2.1.0",
+    "pg": "^8.2.1",
+    "pg-connection-string": "^2.2.3",
     "pg-escape": "^0.2.0",
     "verror": "^1.10.0"
   },
   "devDependencies": {
     "@types/pg-escape": "^0.2.0",
-    "devkeeper": "^0.1.69"
+    "devkeeper": "^0.1.75"
   },
   "devkeeperModifications": {
     "files": [
@@ -105,6 +104,6 @@
         "LICENSE"
       ]
     },
-    "version": "0.1.69"
+    "version": "0.1.75"
   }
 }

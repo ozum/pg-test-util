@@ -230,6 +230,13 @@ describe("pg-test-util", () => {
       expect(queryResult[0]).toEqual({ stub: 0 });
     });
 
+    it("should copy database without name", async () => {
+      await pgTestUtil.createDatabase({ name: "ptu-source-3", file: files.build });
+      const targetDb = await pgTestUtil.copyDatabase({ from: "ptu-source" });
+      const queryResult = await targetDb.query("SELECT count(*) AS stub FROM member");
+      expect(queryResult[0]).toEqual({ stub: 0 });
+    });
+
     it("should throw error for failing copy operation", async () => {
       await expect(pgTestUtil.copyDatabase({ to: "template0", drop: true })).rejects.toThrow(/Cannot copy from/);
     });
