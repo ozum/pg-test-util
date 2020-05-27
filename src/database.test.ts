@@ -27,6 +27,10 @@ afterAll(async () => {
 });
 
 describe("database", () => {
+  it("should have connection string.", () => {
+    expect(db.common.connectionString).toBe("postgresql://user:password@127.0.0.1:5432/ptudb-query");
+  });
+
   it("should survive disconnect even not connected", async () => {
     const tempDb = new Database({
       connection: { ...connection, database: "template1" },

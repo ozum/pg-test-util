@@ -68,6 +68,11 @@ export default class Database {
     return this._knex;
   }
 
+  /** Connection string. */
+  get connectionString(): string {
+    return this.connection.connectionString;
+  }
+
   /** Disconnects from database. */
   async disconnect(): Promise<void> {
     if (this.isConnected) {
