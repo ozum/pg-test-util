@@ -1,50 +1,49 @@
 # pg-test-util
 
-Utility library for administrative database operations.
+PostgreSQL administrative utilities such as creating and dropping tables, users etc.
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 - [Synopsis](#synopsis)
-  - [Single Database](#single-database)
-  - [Multiple Databases](#multiple-databases)
-  - [Unit Tests (Jest, Mocha, Lab etc.)](#unit-tests-jest-mocha-lab-etc)
 - [Details](#details)
 - [API](#api)
-- [pg-test-util](#pg-test-util)
-  - [Type aliases](#type-aliases)
-    - [ConnectionConfig](#connectionconfig)
+  - [Table of contents](#table-of-contents)
+    - [Classes](#classes)
+    - [Interfaces](#interfaces)
+    - [Type aliases](#type-aliases)
+  - [Type aliases](#type-aliases-1)
+    - [EntityInfo](#entityinfo)
     - [SequenceInfo](#sequenceinfo)
-    - [TableInfo](#tableinfo)
-  - [Functions](#functions)
-    - [isConnectionConfigWithObject](#isconnectionconfigwithobject)
-- [Classes](#classes)
+- [Classes](#classes-1)
 - [Class: Database](#class-database)
-  - [Hierarchy](#hierarchy)
-  - [Properties](#properties)
+  - [Table of contents](#table-of-contents-1)
+    - [Properties](#properties)
+    - [Accessors](#accessors)
+    - [Methods](#methods)
+  - [Properties](#properties-1)
+    - [client](#client)
     - [drop](#drop)
-  - [Accessors](#accessors)
-    - [connectionString](#connectionstring)
-    - [isConnected](#isconnected)
-    - [knex](#knex)
+  - [Accessors](#accessors-1)
     - [name](#name)
-  - [Methods](#methods)
+  - [Methods](#methods-1)
+    - [connect](#connect)
     - [disconnect](#disconnect)
+    - [getMaterializedViews](#getmaterializedviews)
+    - [getPartitionedTables](#getpartitionedtables)
     - [getSequences](#getsequences)
     - [getTables](#gettables)
+    - [getViews](#getviews)
     - [query](#query)
     - [queryFile](#queryfile)
     - [refresh](#refresh)
+    - [syncSequences](#syncsequences)
     - [truncate](#truncate)
-    - [updateSequences](#updatesequences)
-- [Class: PgTestUtil](#class-pgtestutil)
-  - [Hierarchy](#hierarchy-1)
-  - [Constructors](#constructors)
-    - [constructor](#constructor)
-  - [Accessors](#accessors-1)
-    - [defaultDatabaseName](#defaultdatabasename)
-    - [isConnected](#isconnected-1)
-  - [Methods](#methods-1)
+- [Class: default](#class-default)
+  - [Table of contents](#table-of-contents-2)
+    - [Methods](#methods-2)
+  - [Methods](#methods-3)
+    - [cleanup](#cleanup)
     - [copyDatabase](#copydatabase)
     - [createDatabase](#createdatabase)
     - [createUser](#createuser)
@@ -53,866 +52,894 @@ Utility library for administrative database operations.
     - [dropAll](#dropall)
     - [dropAllDatabases](#dropalldatabases)
     - [dropAllUsers](#dropallusers)
+    - [dropConnections](#dropconnections)
     - [dropDatabase](#dropdatabase)
     - [dropUser](#dropuser)
-    - [generateName](#generatename)
+    - [fetcAllDatabaseNames](#fetcalldatabasenames)
     - [getDatabase](#getdatabase)
-    - [getDatabaseListFromServer](#getdatabaselistfromserver)
-    - [getUsers](#getusers)
-- [Interfaces](#interfaces)
-- [Interface: ConnectionConfigWithObject](#interface-connectionconfigwithobject)
-  - [Hierarchy](#hierarchy-2)
-  - [Properties](#properties-1)
-    - [`Optional` connectionString](#optional-connectionstring)
-    - [database](#database)
-    - [`Optional` host](#optional-host)
-    - [password](#password)
-    - [`Optional` port](#optional-port)
-    - [user](#user)
-- [Interface: ConnectionConfigWithString](#interface-connectionconfigwithstring)
-  - [Hierarchy](#hierarchy-3)
-  - [Properties](#properties-2)
-    - [connectionString](#connectionstring-1)
-    - [`Optional` database](#optional-database)
-    - [`Optional` host](#optional-host-1)
-    - [`Optional` password](#optional-password)
-    - [`Optional` port](#optional-port-1)
-    - [`Optional` user](#optional-user)
+    - [getUserNames](#getusernames)
+    - [query](#query-1)
+    - [new](#new)
+- [Interfaces](#interfaces-1)
+- [Interface: Options](#interface-options)
+  - [Table of contents](#table-of-contents-3)
+    - [Properties](#properties-2)
+  - [Properties](#properties-3)
+    - [baseName](#basename)
+    - [cleanupOnError](#cleanuponerror)
+    - [safe](#safe)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 # Synopsis
 
 ```ts
-import PgTestUtil from "pg-test-util";
+import PgTestUtil from "../src/index";
 
-const pgTestUtil = new PgTestUtil({ database: "db", user: "user", password: "password" });
-const db = pgTestUtil.createDatabase("my_database");
-```
-
-## Single Database
-
-```ts
-import PgTestUtil from "pg-test-util";
-
-const pgTestUtil = new PgTestUtil(); // Uses connection string from: process.env.PG_TEST_CONNECTION_STRING
-
-db = pgTestUtil.createDatabase(); // No name given, so creates test-db-26352723 (number will be different)
-db.knex("books").insert({ title: "Master Node JS" }); // Get knex of database.
-db.truncate(["preData"]); // Truncates all tables except preData
-pgTestUtil.dropDatabase(); // Drops created db.
-```
-
-## Multiple Databases
-
-```ts
-import PgTestUtil from "pg-test-util";
-
-const pgTestUtil = new PgTestUtil({
-  baseName: "my-project", // Base name for auto generated names.
-  defaultDatabase: "main-db", // Database to use if no db name provided.
-  connection: {
-    connectionString: "postgresql://user:password@127.0.0.1:5432/template1",
-  },
-});
-
-db1 = pgTestUtil.createDatabase(); // No name given, so creates my-project-63526273 (number will be different)
-db2 = pgTestUtil.createDatabase({ name: "main-db" }); // Creates main-db, which is also defined as default database in constructor.
-db3 = pgTestUtil.createDatabase({ name: "some-db" }); // Creates some-db
-db2.truncate(["preData"]); // Truncates all tables in main-db except preData
-db1.drop(); // Drops my-project-63526273 database. (Database#drop())
-pgTestUtil.dropDatabase(); // Drops default db (main-db). (PgTestUtil#dropDatabase())
-pgTestUtil.dropDatabase("some-db"); // Drops default db (some-db). (PgTestUtil#dropDatabase())
-```
-
-## Unit Tests (Jest, Mocha, Lab etc.)
-
-```ts
-import PgTestUtil from "pg-test-util";
-
-const pgTestUtil = new PgTestUtil();
-let knex;
-let database;
+let pgTestUtil: PgTestUtil;
 
 beforeAll(async () => {
-  database = await pgTestUtil.createDatabase({
-    drop: true,
-    name: "my-test-db",
-    file: `${__dirname}/__test-supplements__/create-db.sql`,
-  });
-
-  ({ knex } = database);
+  pgTestUtil = await PgTestUtil.new({ user: "user", password: "password" });
 });
 
 afterAll(async () => {
-  await pgTestUtil.dropAllDatabases(); // To inspect without drop use: await pgTestUtil.disconnectAll({ disconnect: true });
+  await pgTestUtil.cleanup();
 });
 
-describe("csv", () => {
-  beforeEach(async () => {
-    await database.truncate();
-  });
-
-  it("should have expected records.", async () => {
-    const { count } = (await knex("MyYable").count("*"))[0];
-    expect(count).toEqual(5);
+describe("pg-test-util", () => {
+  it("should create database", async () => {
+    const sql = `CREATE TABLE public.member ( id SERIAL NOT NULL, name TEXT NOT NULL, PRIMARY KEY(id))`;
+    const database = await pgTestUtil.createDatabase({ sql });
+    expect(await database.query("SELECT * FROM member")).toEqual([]);
   });
 });
 ```
 
 # Details
 
-Utility library for creating, dropping, truncating and similar operations related to PostgreSQL.
-It uses `knex` for individual databases, and `pg` driver for master connection and administrative purposes.
+<!-- usage -->
 
-It is ideal to use in unit tests. Also has typescript support.
+<!-- commands -->
+
+<%_ if (typedoc) { _%>
 
 # API
 
 <a name="readmemd"></a>
 
-[pg-test-util](#readmemd)
+## Table of contents
 
-# pg-test-util
+### Classes
+
+- [Database](#classesdatabasemd)
+- [default](#classesdefaultmd)
+
+### Interfaces
+
+- [Options](#interfacesoptionsmd)
+
+### Type aliases
+
+- [EntityInfo](#entityinfo)
+- [SequenceInfo](#sequenceinfo)
 
 ## Type aliases
 
-### ConnectionConfig
+### EntityInfo
 
-Ƭ **ConnectionConfig**: _object_
+Ƭ **EntityInfo**: `Object`
 
-_Defined in [types/index.ts:2](https://github.com/ozum/pg-test-util/blob/dcd573c/src/types/index.ts#L2)_
+Type to store entity details.
 
-Connection information.
+#### Type declaration
 
-#### Type declaration:
+| Name     | Type     | Description                |
+| :------- | :------- | :------------------------- |
+| `name`   | `string` | Entity name                |
+| `schema` | `string` | Schema name of the entity. |
 
-- **connectionString**: _string_
+#### Defined in
 
-- **database**: _string_
-
-- **host**: _string_
-
-- **password**: _string_
-
-- **port**: _number_
-
-- **user**: _string_
+[types.ts:2](https://github.com/ozum/pg-test-util/blob/bbd5d24/src/types.ts#L2)
 
 ---
 
 ### SequenceInfo
 
-Ƭ **SequenceInfo**: _object_
+Ƭ **SequenceInfo**: `Object`
 
-_Defined in [types/index.ts:45](https://github.com/ozum/pg-test-util/blob/dcd573c/src/types/index.ts#L45)_
+#### Type declaration
 
-#### Type declaration:
+| Name     | Type     | Description                                   |
+| :------- | :------- | :-------------------------------------------- |
+| `column` | `string` | Column name which sequence is related to.     |
+| `name`   | `string` | Name of the sequence                          |
+| `schema` | `string` | Schema name of the table sequence is defined. |
+| `table`  | `string` | Table name of the sequence.                   |
 
-- **column**: _string_
+#### Defined in
 
-- **schema**: _string_
-
-- **sequence**: _string_
-
-- **table**: _string_
-
----
-
-### TableInfo
-
-Ƭ **TableInfo**: _object_
-
-_Defined in [types/index.ts:38](https://github.com/ozum/pg-test-util/blob/dcd573c/src/types/index.ts#L38)_
-
-Type to store table details.
-
-#### Type declaration:
-
-- **schema**: _string_
-
-- **table**: _string_
-
-## Functions
-
-### isConnectionConfigWithObject
-
-▸ **isConnectionConfigWithObject**(`config`: any): _config is ConnectionConfigWithObject_
-
-_Defined in [helper.ts:5](https://github.com/ozum/pg-test-util/blob/dcd573c/src/helper.ts#L5)_
-
-**Parameters:**
-
-| Name     | Type |
-| -------- | ---- |
-| `config` | any  |
-
-**Returns:** _config is ConnectionConfigWithObject_
+[types.ts:9](https://github.com/ozum/pg-test-util/blob/bbd5d24/src/types.ts#L9)
 
 # Classes
 
 <a name="classesdatabasemd"></a>
 
-[pg-test-util](#readmemd) › [Database](#classesdatabasemd)
+[pg-test-util](#readmemd) / Database
 
 # Class: Database
 
-Database class is used for tasks related to individual database such as connecting, querying, getting tables, getting sequences etc.
+Execute tasks related to individual database such as connecting, querying, getting tables, getting sequences etc.
 
-## Hierarchy
+## Table of contents
 
-- **Database**
+### Properties
+
+- [client](#client)
+- [drop](#drop)
+
+### Accessors
+
+- [name](#name)
+
+### Methods
+
+- [connect](#connect)
+- [disconnect](#disconnect)
+- [getMaterializedViews](#getmaterializedviews)
+- [getPartitionedTables](#getpartitionedtables)
+- [getSequences](#getsequences)
+- [getTables](#gettables)
+- [getViews](#getviews)
+- [query](#query)
+- [queryFile](#queryfile)
+- [refresh](#refresh)
+- [syncSequences](#syncsequences)
+- [truncate](#truncate)
 
 ## Properties
 
+### client
+
+• `Readonly` **client**: `Client`
+
+[node-postgres client](https://node-postgres.com/api/client)
+
+#### Defined in
+
+[database.ts:35](https://github.com/ozum/pg-test-util/blob/bbd5d24/src/database.ts#L35)
+
+---
+
 ### drop
 
-• **drop**: _function_
+• `Readonly` **drop**: () => `Promise`<`void`\>
 
-_Defined in [database.ts:50](https://github.com/ozum/pg-test-util/blob/dcd573c/src/database.ts#L50)_
+#### Type declaration
 
-Function to drop this database. `DROP DATABSE` sql query must be executed from another database, so this function should be passed to constructor.
+▸ (): `Promise`<`void`\>
 
-#### Type declaration:
+Drops the database.
 
-▸ (): _Promise‹void›_
+##### Returns
+
+`Promise`<`void`\>
+
+#### Defined in
+
+[database.ts:38](https://github.com/ozum/pg-test-util/blob/bbd5d24/src/database.ts#L38)
 
 ## Accessors
 
-### connectionString
-
-• **get connectionString**(): _string_
-
-_Defined in [database.ts:72](https://github.com/ozum/pg-test-util/blob/dcd573c/src/database.ts#L72)_
-
-Connection string.
-
-**Returns:** _string_
-
----
-
-### isConnected
-
-• **get isConnected**(): _boolean_
-
-_Defined in [database.ts:58](https://github.com/ozum/pg-test-util/blob/dcd573c/src/database.ts#L58)_
-
-Whether database is connected or not.
-
-**Returns:** _boolean_
-
----
-
-### knex
-
-• **get knex**(): _[knex](#knex)_
-
-_Defined in [database.ts:63](https://github.com/ozum/pg-test-util/blob/dcd573c/src/database.ts#L63)_
-
-`knex` object for database. It may be used to build queries easily.
-
-**Returns:** _[knex](#knex)_
-
----
-
 ### name
 
-• **get name**(): _string_
+• `get` **name**(): `string`
 
-_Defined in [database.ts:53](https://github.com/ozum/pg-test-util/blob/dcd573c/src/database.ts#L53)_
+Name of the database
 
-Database name.
+#### Returns
 
-**Returns:** _string_
+`string`
+
+#### Defined in
+
+[database.ts:62](https://github.com/ozum/pg-test-util/blob/bbd5d24/src/database.ts#L62)
 
 ## Methods
 
+### connect
+
+▸ **connect**(): `Promise`<`void`\>
+
+Connects to database.
+
+#### Returns
+
+`Promise`<`void`\>
+
+#### Defined in
+
+[database.ts:67](https://github.com/ozum/pg-test-util/blob/bbd5d24/src/database.ts#L67)
+
+---
+
 ### disconnect
 
-▸ **disconnect**(): _Promise‹void›_
-
-_Defined in [database.ts:77](https://github.com/ozum/pg-test-util/blob/dcd573c/src/database.ts#L77)_
+▸ **disconnect**(): `Promise`<`void`\>
 
 Disconnects from database.
 
-**Returns:** _Promise‹void›_
+#### Returns
+
+`Promise`<`void`\>
+
+#### Defined in
+
+[database.ts:78](https://github.com/ozum/pg-test-util/blob/bbd5d24/src/database.ts#L78)
+
+---
+
+### getMaterializedViews
+
+▸ **getMaterializedViews**(): `Promise`<[`EntityInfo`](#entityinfo)[]\>
+
+Returns materialized views from database. Uses cache for fast results. Use `refresh()` method to refresh the cache.
+
+#### Returns
+
+`Promise`<[`EntityInfo`](#entityinfo)[]\>
+
+#### Defined in
+
+[database.ts:136](https://github.com/ozum/pg-test-util/blob/bbd5d24/src/database.ts#L136)
+
+---
+
+### getPartitionedTables
+
+▸ **getPartitionedTables**(): `Promise`<[`EntityInfo`](#entityinfo)[]\>
+
+Returns partitioned tables from database. Uses cache for fast results. Use `refresh()` method to refresh the cache.
+
+#### Returns
+
+`Promise`<[`EntityInfo`](#entityinfo)[]\>
+
+#### Defined in
+
+[database.ts:142](https://github.com/ozum/pg-test-util/blob/bbd5d24/src/database.ts#L142)
 
 ---
 
 ### getSequences
 
-▸ **getSequences**(): _Promise‹[SequenceInfo](#sequenceinfo)[]›_
-
-_Defined in [database.ts:126](https://github.com/ozum/pg-test-util/blob/dcd573c/src/database.ts#L126)_
+▸ **getSequences**(): `Promise`<[`SequenceInfo`](#sequenceinfo)[]\>
 
 Returns sequences from database. Uses cache for fast results. Use `refresh()` method to refresh the cache.
 
-**Returns:** _Promise‹[SequenceInfo](#sequenceinfo)[]›_
+#### Returns
 
-information about sequences
+`Promise`<[`SequenceInfo`](#sequenceinfo)[]\>
+
+#### Defined in
+
+[database.ts:148](https://github.com/ozum/pg-test-util/blob/bbd5d24/src/database.ts#L148)
 
 ---
 
 ### getTables
 
-▸ **getTables**(): _Promise‹[TableInfo](#tableinfo)[]›_
-
-_Defined in [database.ts:103](https://github.com/ozum/pg-test-util/blob/dcd573c/src/database.ts#L103)_
+▸ **getTables**(): `Promise`<[`EntityInfo`](#entityinfo)[]\>
 
 Returns tables from database. Uses cache for fast results. Use `refresh()` method to refresh the cache.
 
-**Returns:** _Promise‹[TableInfo](#tableinfo)[]›_
+#### Returns
 
-information about tables.
+`Promise`<[`EntityInfo`](#entityinfo)[]\>
+
+#### Defined in
+
+[database.ts:124](https://github.com/ozum/pg-test-util/blob/bbd5d24/src/database.ts#L124)
+
+---
+
+### getViews
+
+▸ **getViews**(): `Promise`<[`EntityInfo`](#entityinfo)[]\>
+
+Returns views from database. Uses cache for fast results. Use `refresh()` method to refresh the cache.
+
+#### Returns
+
+`Promise`<[`EntityInfo`](#entityinfo)[]\>
+
+#### Defined in
+
+[database.ts:130](https://github.com/ozum/pg-test-util/blob/bbd5d24/src/database.ts#L130)
 
 ---
 
 ### query
 
-▸ **query**<**T**>(`sql`: string | Array‹string›): _Promise‹T[]›_
+▸ **query**<`T`\>(`sql`, `params?`): `Promise`<`T`[]\>
 
-_Defined in [database.ts:226](https://github.com/ozum/pg-test-util/blob/dcd573c/src/database.ts#L226)_
+Executes given SQL and returns result rows.
 
-Executes given SQL and returns results.
+#### Type parameters
 
-**Type parameters:**
+| Name | Type  | Description                                   |
+| :--- | :---- | :-------------------------------------------- |
+| `T`  | `any` | is type for single row returned by SQL query. |
 
-▪ **T**: _any_
+#### Parameters
 
-is type for single row returned by SQL query.
+| Name      | Type     | Description                            |
+| :-------- | :------- | :------------------------------------- |
+| `sql`     | `string` | is sql query.                          |
+| `params?` | `any`[]  | are array of parameters to pass query. |
 
-**Parameters:**
+#### Returns
 
-| Name  | Type                        | Description                                      |
-| ----- | --------------------------- | ------------------------------------------------ |
-| `sql` | string &#124; Array‹string› | is sql query or array of sql queries to execute. |
+`Promise`<`T`[]\>
 
-**Returns:** _Promise‹T[]›_
+result rows of the SQL query.
 
-result rows of the SQL query. If multiple queries are given results are concatenated into single array.
+#### Defined in
+
+[database.ts:207](https://github.com/ozum/pg-test-util/blob/bbd5d24/src/database.ts#L207)
 
 ---
 
 ### queryFile
 
-▸ **queryFile**<**T**>(`file`: string): _Promise‹T[]›_
-
-_Defined in [database.ts:209](https://github.com/ozum/pg-test-util/blob/dcd573c/src/database.ts#L209)_
+▸ **queryFile**<`T`\>(`file`, `params?`): `Promise`<`T`[]\>
 
 Reads and executes SQL in given file and returns results.
 
-**Type parameters:**
+#### Type parameters
 
-▪ **T**: _any_
+| Name | Type  | Description                                   |
+| :--- | :---- | :-------------------------------------------- |
+| `T`  | `any` | is type for single row returned by SQL query. |
 
-is type for single row returned by SQL query.
+#### Parameters
 
-**Parameters:**
+| Name      | Type     | Description                            |
+| :-------- | :------- | :------------------------------------- |
+| `file`    | `string` | is file to read SQL from.              |
+| `params?` | `any`[]  | are array of parameters to pass query. |
 
-| Name   | Type   | Description               |
-| ------ | ------ | ------------------------- |
-| `file` | string | is file to read SQL from. |
+#### Returns
 
-**Returns:** _Promise‹T[]›_
+`Promise`<`T`[]\>
 
 result rows of the SQL query.
+
+#### Defined in
+
+[database.ts:226](https://github.com/ozum/pg-test-util/blob/bbd5d24/src/database.ts#L226)
 
 ---
 
 ### refresh
 
-▸ **refresh**(): _void_
+▸ **refresh**(): `Promise`<`void`\>
 
-_Defined in [database.ts:93](https://github.com/ozum/pg-test-util/blob/dcd573c/src/database.ts#L93)_
+Fetches database objects (i.e. tables, sequences) from database and refreshes the cache of the object. If you create new tables etc., you should refresh.
 
-Clears tables and sequences cache.
+#### Returns
 
-**Returns:** _void_
+`Promise`<`void`\>
+
+#### Defined in
+
+[database.ts:89](https://github.com/ozum/pg-test-util/blob/bbd5d24/src/database.ts#L89)
+
+---
+
+### syncSequences
+
+▸ **syncSequences**(): `Promise`<`void`\>
+
+Set current value of sequence for each column of all tables based on record with maximum number. If there are no record in the table, the value will be set to 1.
+
+#### Returns
+
+`Promise`<`void`\>
+
+#### Defined in
+
+[database.ts:154](https://github.com/ozum/pg-test-util/blob/bbd5d24/src/database.ts#L154)
 
 ---
 
 ### truncate
 
-▸ **truncate**(`ignoreTables`: Array‹string›): _Promise‹void›_
+▸ **truncate**(`ignore?`): `Promise`<`void`\>
 
-_Defined in [database.ts:182](https://github.com/ozum/pg-test-util/blob/dcd573c/src/database.ts#L182)_
+Truncates all tables and resets their sequences in the database.
 
-Truncates all tables in database.
+#### Parameters
 
-**Parameters:**
+| Name             | Type       | Description                           |
+| :--------------- | :--------- | :------------------------------------ |
+| `ignore`         | `Object`   | are the list of the tables to ignore. |
+| `ignore.ignore?` | `string`[] | -                                     |
 
-| Name           | Type          | Default | Description                   |
-| -------------- | ------------- | ------- | ----------------------------- |
-| `ignoreTables` | Array‹string› | []      | are list of tables to ignore. |
+#### Returns
 
-**Returns:** _Promise‹void›_
+`Promise`<`void`\>
 
----
+#### Defined in
 
-### updateSequences
+[database.ts:180](https://github.com/ozum/pg-test-util/blob/bbd5d24/src/database.ts#L180)
 
-▸ **updateSequences**(): _Promise‹void›_
+<a name="classesdefaultmd"></a>
 
-_Defined in [database.ts:154](https://github.com/ozum/pg-test-util/blob/dcd573c/src/database.ts#L154)_
+[pg-test-util](#readmemd) / default
 
-Set current value of sequence for each column of all tables based on record with maximum number. If there are no record in the table, the value will be set to 1.
+# Class: default
 
-**Returns:** _Promise‹void›_
+PgTestUtil class is used to perform PostgreSQL operations related to unit testing such as create database, truncate database and drop database etc.
 
-<a name="classespgtestutilmd"></a>
+## Table of contents
 
-[pg-test-util](#readmemd) › [PgTestUtil](#classespgtestutilmd)
+### Methods
 
-# Class: PgTestUtil
-
-PgTestUtil class is used to perform PostgreSQL operations related to unit testing such as create database, truncate database and
-drop database etc.
-
-## Hierarchy
-
-- **PgTestUtil**
-
-## Constructors
-
-### constructor
-
-\+ **new PgTestUtil**(`__namedParameters`: object): _[PgTestUtil](#classespgtestutilmd)_
-
-_Defined in [pg-test-util.ts:30](https://github.com/ozum/pg-test-util/blob/dcd573c/src/pg-test-util.ts#L30)_
-
-Creates an instance of PgTestUtil.
-
-**Parameters:**
-
-▪`Default value` **\_\_namedParameters**: _object_= {} as PgTestUtilConstructorArgs
-
-| Name                | Type                                                                                                                                               | Default   | Description                                                                                                                                                                    |
-| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `baseName`          | string                                                                                                                                             | "test-db" | is base name to use if database name is provided during database creation.                                                                                                     |
-| `connection`        | [ConnectionConfigWithObject](#interfacesconnectionconfigwithobjectmd) &#124; [ConnectionConfigWithString](#interfacesconnectionconfigwithstringmd) | -         | is connection parameters for connecting master database. If not provided, `process.env.PG_TEST_CONNECTION_STRING` is used.                                                     |
-| `defaultDatabase`   | undefined &#124; string                                                                                                                            | -         | is fefault database name to use in queries. If not provided, first created database is used.                                                                                   |
-| `disconnectOnError` | boolean                                                                                                                                            | false     | is whether to disconnects from all databases on error caused by this instance. (Should not be used in unit tests. Disconnect or drop in `afterAll` method of testing library.) |
-| `dropOnlyCreated`   | boolean                                                                                                                                            | true      | if true, `drop` method does not drop databases which are not created by this object instance.                                                                                  |
-
-**Returns:** _[PgTestUtil](#classespgtestutilmd)_
-
-## Accessors
-
-### defaultDatabaseName
-
-• **get defaultDatabaseName**(): _string_
-
-_Defined in [pg-test-util.ts:140](https://github.com/ozum/pg-test-util/blob/dcd573c/src/pg-test-util.ts#L140)_
-
-Default database name which is determined by algorithm below:
-
-1. `defaultDatabase` name provided during instance creation.
-2. If only one database is created, created database.
-3. Cannot be determined a default database name.
-
-**`throws`** Throws error if no default database name can be determinded.
-
-**Returns:** _string_
-
----
-
-### isConnected
-
-• **get isConnected**(): _boolean_
-
-_Defined in [pg-test-util.ts:128](https://github.com/ozum/pg-test-util/blob/dcd573c/src/pg-test-util.ts#L128)_
-
-Connection status.
-
-**Returns:** _boolean_
+- [cleanup](#cleanup)
+- [copyDatabase](#copydatabase)
+- [createDatabase](#createdatabase)
+- [createUser](#createuser)
+- [disconnect](#disconnect)
+- [disconnectAll](#disconnectall)
+- [dropAll](#dropall)
+- [dropAllDatabases](#dropalldatabases)
+- [dropAllUsers](#dropallusers)
+- [dropConnections](#dropconnections)
+- [dropDatabase](#dropdatabase)
+- [dropUser](#dropuser)
+- [fetcAllDatabaseNames](#fetcalldatabasenames)
+- [getDatabase](#getdatabase)
+- [getUserNames](#getusernames)
+- [query](#query)
+- [new](#new)
 
 ## Methods
 
+### cleanup
+
+▸ **cleanup**(): `Promise`<`void`\>
+
+#### Returns
+
+`Promise`<`void`\>
+
+#### Defined in
+
+[pg-test-util.ts:304](https://github.com/ozum/pg-test-util/blob/bbd5d24/src/pg-test-util.ts#L304)
+
+---
+
 ### copyDatabase
 
-▸ **copyDatabase**(`__namedParameters`: object): _Promise‹[Database](#classesdatabasemd)›_
-
-_Defined in [pg-test-util.ts:334](https://github.com/ozum/pg-test-util/blob/dcd573c/src/pg-test-util.ts#L334)_
+▸ **copyDatabase**(`options`): `Promise`<[`Database`](#classesdatabasemd)\>
 
 Copies a given database with a new name.
 
-**Parameters:**
+#### Parameters
 
-▪ **\_\_namedParameters**: _object_
+| Name              | Type                                         | Description                                                  |
+| :---------------- | :------------------------------------------- | :----------------------------------------------------------- |
+| `options`         | `Object`                                     | is configuration.                                            |
+| `options.drop?`   | `boolean`                                    | is whether to drop target database before copy.              |
+| `options.safe?`   | `boolean`                                    | If true, only databases created by this instance is dropped. |
+| `options.source?` | `string` \| [`Database`](#classesdatabasemd) | -                                                            |
+| `options.target?` | `string` \| [`Database`](#classesdatabasemd) | -                                                            |
 
-| Name   | Type                                           | Default                  |
-| ------ | ---------------------------------------------- | ------------------------ |
-| `drop` | boolean                                        | false                    |
-| `from` | string &#124; [Database](#classesdatabasemd)‹› | this.defaultDatabaseName |
-| `to`   | string &#124; [Database](#classesdatabasemd)‹› | this.generateName()      |
+#### Returns
 
-**Returns:** _Promise‹[Database](#classesdatabasemd)›_
+`Promise`<[`Database`](#classesdatabasemd)\>
 
 [Database](#classesdatabasemd) object.
+
+#### Defined in
+
+[pg-test-util.ts:183](https://github.com/ozum/pg-test-util/blob/bbd5d24/src/pg-test-util.ts#L183)
 
 ---
 
 ### createDatabase
 
-▸ **createDatabase**(`__namedParameters`: object): _Promise‹[Database](#classesdatabasemd)›_
-
-_Defined in [pg-test-util.ts:289](https://github.com/ozum/pg-test-util/blob/dcd573c/src/pg-test-util.ts#L289)_
+▸ **createDatabase**(`options?`): `Promise`<[`Database`](#classesdatabasemd)\>
 
 Creates a database. If name is not provided generates a name using `baseName` from constructor and part of epoch time.
 
-**Parameters:**
+#### Parameters
 
-▪`Default value` **\_\_namedParameters**: _object_= {}
+| Name                | Type      | Description                                                   |
+| :------------------ | :-------- | :------------------------------------------------------------ |
+| `options`           | `Object`  | is configuration                                              |
+| `options.drop?`     | `boolean` | is whether to drop database before create command.            |
+| `options.encoding?` | `string`  | is database encoding                                          |
+| `options.file?`     | `string`  | is SQL query file to execute on database after it is created. |
+| `options.name?`     | `string`  | is database name                                              |
+| `options.safe?`     | `boolean` | If true, only databases created by this instance is dropped.  |
+| `options.sql?`      | `string`  | is SQL query to execute on database after it is created.      |
+| `options.template?` | `string`  | is database template to use.                                  |
 
-| Name       | Type                    | Default             |
-| ---------- | ----------------------- | ------------------- |
-| `drop`     | boolean                 | false               |
-| `encoding` | string                  | "UTF8"              |
-| `file`     | undefined &#124; string | -                   |
-| `name`     | string                  | this.generateName() |
-| `sql`      | undefined &#124; string | -                   |
-| `template` | string                  | "template0"         |
+#### Returns
 
-**Returns:** _Promise‹[Database](#classesdatabasemd)›_
+`Promise`<[`Database`](#classesdatabasemd)\>
 
 [Database](#classesdatabasemd) object representing created database.
+
+#### Defined in
+
+[pg-test-util.ts:142](https://github.com/ozum/pg-test-util/blob/bbd5d24/src/pg-test-util.ts#L142)
 
 ---
 
 ### createUser
 
-▸ **createUser**(`user`: string, `password`: string): _Promise‹QueryResult›_
+▸ **createUser**(`user`, `password`): `Promise`<`void`\>
 
-_Defined in [pg-test-util.ts:224](https://github.com/ozum/pg-test-util/blob/dcd573c/src/pg-test-util.ts#L224)_
+Creates a new database user if it does not exist.
 
-Creates a new database user.
+#### Parameters
 
-**Parameters:**
+| Name       | Type     | Description                   |
+| :--------- | :------- | :---------------------------- |
+| `user`     | `string` | is the name of the user.      |
+| `password` | `string` | is the password for the user. |
 
-| Name       | Type   | Description                   |
-| ---------- | ------ | ----------------------------- |
-| `user`     | string | is user name to create        |
-| `password` | string | is password for created user. |
+#### Returns
 
-**Returns:** _Promise‹QueryResult›_
+`Promise`<`void`\>
 
-query result.
+#### Defined in
+
+[pg-test-util.ts:250](https://github.com/ozum/pg-test-util/blob/bbd5d24/src/pg-test-util.ts#L250)
 
 ---
 
 ### disconnect
 
-▸ **disconnect**(): _Promise‹void›_
+▸ **disconnect**(): `Promise`<`void`\>
 
-_Defined in [pg-test-util.ts:187](https://github.com/ozum/pg-test-util/blob/dcd573c/src/pg-test-util.ts#L187)_
+Disconnects admin client.
 
-Disconnects from master database.
+#### Returns
 
-**Returns:** _Promise‹void›_
+`Promise`<`void`\>
+
+#### Defined in
+
+[pg-test-util.ts:103](https://github.com/ozum/pg-test-util/blob/bbd5d24/src/pg-test-util.ts#L103)
 
 ---
 
 ### disconnectAll
 
-▸ **disconnectAll**(`__namedParameters`: object): _Promise‹void[]›_
+▸ **disconnectAll**(`options?`): `Promise`<`void`[]\>
 
-_Defined in [pg-test-util.ts:207](https://github.com/ozum/pg-test-util/blob/dcd573c/src/pg-test-util.ts#L207)_
+Disconnects all clients.
 
-Disconnects from all databases.
+#### Parameters
 
-**Parameters:**
+| Name            | Type                     | Description                         |
+| :-------------- | :----------------------- | :---------------------------------- |
+| `options`       | `Object`                 | are options.                        |
+| `options.admin` | `undefined` \| `boolean` | whether to disconnect admin client. |
 
-▪`Default value` **\_\_namedParameters**: _object_= {}
+#### Returns
 
-| Name     | Type    | Default |
-| -------- | ------- | ------- |
-| `master` | boolean | true    |
+`Promise`<`void`[]\>
 
-**Returns:** _Promise‹void[]›_
+#### Defined in
+
+[pg-test-util.ts:117](https://github.com/ozum/pg-test-util/blob/bbd5d24/src/pg-test-util.ts#L117)
 
 ---
 
 ### dropAll
 
-▸ **dropAll**(`__namedParameters`: object): _Promise‹void›_
-
-_Defined in [pg-test-util.ts:419](https://github.com/ozum/pg-test-util/blob/dcd573c/src/pg-test-util.ts#L419)_
+▸ **dropAll**(`options?`): `Promise`<`void`\>
 
 Drops all items created by this instance.
 
-**Parameters:**
+#### Parameters
 
-▪`Default value` **\_\_namedParameters**: _object_= {}
+| Name                 | Type                     | Description                            |
+| :------------------- | :----------------------- | :------------------------------------- |
+| `options`            | `Object`                 | are options.                           |
+| `options.disconnect` | `undefined` \| `boolean` | is whether to disconnect admin client. |
 
-| Name         | Type    | Default | Description                                    |
-| ------------ | ------- | ------- | ---------------------------------------------- |
-| `disconnect` | boolean | true    | is whether to disconnect from master database. |
+#### Returns
 
-**Returns:** _Promise‹void›_
+`Promise`<`void`\>
+
+#### Defined in
+
+[pg-test-util.ts:300](https://github.com/ozum/pg-test-util/blob/bbd5d24/src/pg-test-util.ts#L300)
 
 ---
 
 ### dropAllDatabases
 
-▸ **dropAllDatabases**(`__namedParameters`: object): _Promise‹void›_
-
-_Defined in [pg-test-util.ts:405](https://github.com/ozum/pg-test-util/blob/dcd573c/src/pg-test-util.ts#L405)_
+▸ **dropAllDatabases**(`options?`): `Promise`<`void`\>
 
 Drops all databases created by this instance.
 
-**Parameters:**
+#### Parameters
 
-▪`Default value` **\_\_namedParameters**: _object_= {}
+| Name                 | Type                     | Description                            |
+| :------------------- | :----------------------- | :------------------------------------- |
+| `options`            | `Object`                 | are options.                           |
+| `options.disconnect` | `undefined` \| `boolean` | is whether to disconnect admin client. |
 
-| Name         | Type    | Default |
-| ------------ | ------- | ------- |
-| `disconnect` | boolean | true    |
+#### Returns
 
-**Returns:** _Promise‹void›_
+`Promise`<`void`\>
+
+#### Defined in
+
+[pg-test-util.ts:239](https://github.com/ozum/pg-test-util/blob/bbd5d24/src/pg-test-util.ts#L239)
 
 ---
 
 ### dropAllUsers
 
-▸ **dropAllUsers**(): _Promise‹void›_
-
-_Defined in [pg-test-util.ts:273](https://github.com/ozum/pg-test-util/blob/dcd573c/src/pg-test-util.ts#L273)_
+▸ **dropAllUsers**(): `Promise`<`void`\>
 
 Drops all users created by this instance.
 
-**Returns:** _Promise‹void›_
+#### Returns
+
+`Promise`<`void`\>
+
+#### Defined in
+
+[pg-test-util.ts:289](https://github.com/ozum/pg-test-util/blob/bbd5d24/src/pg-test-util.ts#L289)
+
+---
+
+### dropConnections
+
+▸ **dropConnections**(`databaseName`): `Promise`<`void`\>
+
+#### Parameters
+
+| Name           | Type     |
+| :------------- | :------- |
+| `databaseName` | `string` |
+
+#### Returns
+
+`Promise`<`void`\>
+
+#### Defined in
+
+[pg-test-util.ts:229](https://github.com/ozum/pg-test-util/blob/bbd5d24/src/pg-test-util.ts#L229)
 
 ---
 
 ### dropDatabase
 
-▸ **dropDatabase**(`database`: string | [Database](#classesdatabasemd), `__namedParameters`: object): _Promise‹void›_
-
-_Defined in [pg-test-util.ts:366](https://github.com/ozum/pg-test-util/blob/dcd573c/src/pg-test-util.ts#L366)_
+▸ **dropDatabase**(`database?`, `options?`): `Promise`<`void`\>
 
 Drops given database. To ensure the task, drops all connections to the database beforehand.
 If `dropOnlyCreated` is true and database is not created by this instance, throws error.
 
-**Parameters:**
+#### Parameters
 
-▪`Default value` **database**: _string | [Database](#classesdatabasemd)_= this.defaultDatabaseName
+| Name           | Type                                         | Description                                                          |
+| :------------- | :------------------------------------------- | :------------------------------------------------------------------- |
+| `database`     | `string` \| [`Database`](#classesdatabasemd) | is database name or [Database](#classesdatabasemd) instance to drop. |
+| `options`      | `Object`                                     | are options                                                          |
+| `options.safe` | `undefined` \| `boolean`                     | If true, only databases created by this instance is dropped.         |
 
-is database name or `Database` instance to drop.
+#### Returns
 
-▪`Default value` **\_\_namedParameters**: _object_= {}
+`Promise`<`void`\>
 
-| Name              | Type    | Default              |
-| ----------------- | ------- | -------------------- |
-| `dropOnlyCreated` | boolean | this.dropOnlyCreated |
+#### Defined in
 
-**Returns:** _Promise‹void›_
+[pg-test-util.ts:211](https://github.com/ozum/pg-test-util/blob/bbd5d24/src/pg-test-util.ts#L211)
 
 ---
 
 ### dropUser
 
-▸ **dropUser**(`user`: string, `__namedParameters`: object): _Promise‹void›_
-
-_Defined in [pg-test-util.ts:253](https://github.com/ozum/pg-test-util/blob/dcd573c/src/pg-test-util.ts#L253)_
+▸ **dropUser**(`user`, `options?`): `Promise`<`void`\>
 
 Drops database user.
 
-**Parameters:**
+#### Parameters
 
-▪ **user**: _string_
+| Name           | Type                     | Description                                              |
+| :------------- | :----------------------- | :------------------------------------------------------- |
+| `user`         | `string`                 | is user name to drop.                                    |
+| `options`      | `Object`                 | are options.                                             |
+| `options.safe` | `undefined` \| `boolean` | If true, only users created by this instance is dropped. |
 
-is user name to drop.
+#### Returns
 
-▪`Default value` **\_\_namedParameters**: _object_= {}
+`Promise`<`void`\>
 
-| Name              | Type    | Default              |
-| ----------------- | ------- | -------------------- |
-| `dropOnlyCreated` | boolean | this.dropOnlyCreated |
+#### Defined in
 
-**Returns:** _Promise‹void›_
+[pg-test-util.ts:280](https://github.com/ozum/pg-test-util/blob/bbd5d24/src/pg-test-util.ts#L280)
 
 ---
 
-### generateName
+### fetcAllDatabaseNames
 
-▸ **generateName**(): _string_
+▸ **fetcAllDatabaseNames**(`onlyCreated`): `Promise`<`string`[]\>
 
-_Defined in [pg-test-util.ts:158](https://github.com/ozum/pg-test-util/blob/dcd573c/src/pg-test-util.ts#L158)_
+Fetches the list of all databases from server.
 
-Generates a unique database name. Uniqueness of database name is not generated useing an advanced
-algorithm or technique. Simply epoch time is used.
+#### Parameters
 
-**Returns:** _string_
+| Name          | Type      |
+| :------------ | :-------- |
+| `onlyCreated` | `boolean` |
 
-unique database name
+#### Returns
+
+`Promise`<`string`[]\>
+
+#### Defined in
+
+[pg-test-util.ts:124](https://github.com/ozum/pg-test-util/blob/bbd5d24/src/pg-test-util.ts#L124)
 
 ---
 
 ### getDatabase
 
-▸ **getDatabase**(`name`: string): _[Database](#classesdatabasemd)_
-
-_Defined in [pg-test-util.ts:170](https://github.com/ozum/pg-test-util/blob/dcd573c/src/pg-test-util.ts#L170)_
+▸ **getDatabase**(`name?`): `Promise`<[`Database`](#classesdatabasemd)\>
 
 Returns `Database` instance object for given database name. Also connects to database if it is not connected.
 If no connection details are provided, default database is returned using same connection parameters as master database.
 
-**Parameters:**
+#### Parameters
 
-| Name   | Type   | Default                  | Description                                                                     |
-| ------ | ------ | ------------------------ | ------------------------------------------------------------------------------- |
-| `name` | string | this.defaultDatabaseName | is database name to get instance for. `defaultDatabaseName` is used by default. |
+| Name   | Type     | Description                                                                     |
+| :----- | :------- | :------------------------------------------------------------------------------ |
+| `name` | `string` | is database name to get instance for. `defaultDatabaseName` is used by default. |
 
-**Returns:** _[Database](#classesdatabasemd)_
+#### Returns
+
+`Promise`<[`Database`](#classesdatabasemd)\>
 
 [Database](#classesdatabasemd) instance for given database name.
 
----
+#### Defined in
 
-### getDatabaseListFromServer
-
-▸ **getDatabaseListFromServer**(): _Promise‹Array‹string››_
-
-_Defined in [pg-test-util.ts:115](https://github.com/ozum/pg-test-util/blob/dcd573c/src/pg-test-util.ts#L115)_
-
-Fetches and returns list of databases from server.
-
-**Returns:** _Promise‹Array‹string››_
-
-list of databases.
+[pg-test-util.ts:90](https://github.com/ozum/pg-test-util/blob/bbd5d24/src/pg-test-util.ts#L90)
 
 ---
 
-### getUsers
+### getUserNames
 
-▸ **getUsers**(): _Promise‹Array‹object››_
+▸ **getUserNames**(`onlyCreated?`): `Promise`<`string`[]\>
 
-_Defined in [pg-test-util.ts:241](https://github.com/ozum/pg-test-util/blob/dcd573c/src/pg-test-util.ts#L241)_
+Fetches database users from database.
 
-Returns database users.
+#### Parameters
 
-**Returns:** _Promise‹Array‹object››_
+| Name          | Type      | Default value | Description                                                      |
+| :------------ | :-------- | :------------ | :--------------------------------------------------------------- |
+| `onlyCreated` | `boolean` | `false`       | is whether to fetch users only created by this utility instance. |
 
-database users as [{ name: 'user1' }, ...]
+#### Returns
+
+`Promise`<`string`[]\>
+
+array of usernames.
+
+#### Defined in
+
+[pg-test-util.ts:267](https://github.com/ozum/pg-test-util/blob/bbd5d24/src/pg-test-util.ts#L267)
+
+---
+
+### query
+
+▸ **query**<`T`\>(`sql`, `params?`): `Promise`<`T`[]\>
+
+Executes given SQL in admin clinet and returns result rows.
+Admin client can be used fro administration queries such as creating databases etc.
+
+#### Type parameters
+
+| Name | Type  | Description                                   |
+| :--- | :---- | :-------------------------------------------- |
+| `T`  | `any` | is type for single row returned by SQL query. |
+
+#### Parameters
+
+| Name      | Type     | Description                            |
+| :-------- | :------- | :------------------------------------- |
+| `sql`     | `string` | is sql query.                          |
+| `params?` | `any`[]  | are array of parameters to pass query. |
+
+#### Returns
+
+`Promise`<`T`[]\>
+
+result rows of the SQL query.
+
+#### Defined in
+
+[pg-test-util.ts:75](https://github.com/ozum/pg-test-util/blob/bbd5d24/src/pg-test-util.ts#L75)
+
+---
+
+### new
+
+▸ `Static` **new**(`connection`, `options?`): `Promise`<[`default`](#classesdefaultmd)\>
+
+Create an instance.
+
+#### Parameters
+
+| Name         | Type                                   | Description                                                  |
+| :----------- | :------------------------------------- | :----------------------------------------------------------- |
+| `connection` | `string` \| `Client` \| `ClientConfig` | is the `pg.client` or connection parameters for `pg.client`. |
+| `options`    | [`Options`](#interfacesoptionsmd)      | are options.                                                 |
+
+#### Returns
+
+`Promise`<[`default`](#classesdefaultmd)\>
+
+#### Defined in
+
+[pg-test-util.ts:39](https://github.com/ozum/pg-test-util/blob/bbd5d24/src/pg-test-util.ts#L39)
 
 # Interfaces
 
-<a name="interfacesconnectionconfigwithobjectmd"></a>
+<a name="interfacesoptionsmd"></a>
 
-[pg-test-util](#readmemd) › [ConnectionConfigWithObject](#interfacesconnectionconfigwithobjectmd)
+[pg-test-util](#readmemd) / Options
 
-# Interface: ConnectionConfigWithObject
+# Interface: Options
 
-Connection information which includes connection details, but not connection string.
+## Table of contents
 
-## Hierarchy
+### Properties
 
-- **ConnectionConfigWithObject**
-
-## Properties
-
-### `Optional` connectionString
-
-• **connectionString**? : _undefined_
-
-_Defined in [types/index.ts:29](https://github.com/ozum/pg-test-util/blob/dcd573c/src/types/index.ts#L29)_
-
----
-
-### database
-
-• **database**: _string_
-
-_Defined in [types/index.ts:30](https://github.com/ozum/pg-test-util/blob/dcd573c/src/types/index.ts#L30)_
-
----
-
-### `Optional` host
-
-• **host**? : _undefined | string_
-
-_Defined in [types/index.ts:33](https://github.com/ozum/pg-test-util/blob/dcd573c/src/types/index.ts#L33)_
-
----
-
-### password
-
-• **password**: _string_
-
-_Defined in [types/index.ts:32](https://github.com/ozum/pg-test-util/blob/dcd573c/src/types/index.ts#L32)_
-
----
-
-### `Optional` port
-
-• **port**? : _undefined | number_
-
-_Defined in [types/index.ts:34](https://github.com/ozum/pg-test-util/blob/dcd573c/src/types/index.ts#L34)_
-
----
-
-### user
-
-• **user**: _string_
-
-_Defined in [types/index.ts:31](https://github.com/ozum/pg-test-util/blob/dcd573c/src/types/index.ts#L31)_
-
-<a name="interfacesconnectionconfigwithstringmd"></a>
-
-[pg-test-util](#readmemd) › [ConnectionConfigWithString](#interfacesconnectionconfigwithstringmd)
-
-# Interface: ConnectionConfigWithString
-
-Connection information which includes connection string and optional configuration details.
-
-## Hierarchy
-
-- **ConnectionConfigWithString**
+- [baseName](#basename)
+- [cleanupOnError](#cleanuponerror)
+- [safe](#safe)
 
 ## Properties
 
-### connectionString
+### baseName
 
-• **connectionString**: _string_
+• `Optional` **baseName**: `string`
 
-_Defined in [types/index.ts:19](https://github.com/ozum/pg-test-util/blob/dcd573c/src/types/index.ts#L19)_
+#### Defined in
 
----
-
-### `Optional` database
-
-• **database**? : _undefined | string_
-
-_Defined in [types/index.ts:20](https://github.com/ozum/pg-test-util/blob/dcd573c/src/types/index.ts#L20)_
+[pg-test-util.ts:9](https://github.com/ozum/pg-test-util/blob/bbd5d24/src/pg-test-util.ts#L9)
 
 ---
 
-### `Optional` host
+### cleanupOnError
 
-• **host**? : _undefined | string_
+• `Optional` **cleanupOnError**: `boolean`
 
-_Defined in [types/index.ts:23](https://github.com/ozum/pg-test-util/blob/dcd573c/src/types/index.ts#L23)_
+#### Defined in
 
----
-
-### `Optional` password
-
-• **password**? : _undefined | string_
-
-_Defined in [types/index.ts:22](https://github.com/ozum/pg-test-util/blob/dcd573c/src/types/index.ts#L22)_
+[pg-test-util.ts:10](https://github.com/ozum/pg-test-util/blob/bbd5d24/src/pg-test-util.ts#L10)
 
 ---
 
-### `Optional` port
+### safe
 
-• **port**? : _undefined | number_
+• `Optional` **safe**: `boolean`
 
-_Defined in [types/index.ts:24](https://github.com/ozum/pg-test-util/blob/dcd573c/src/types/index.ts#L24)_
+#### Defined in
 
----
+[pg-test-util.ts:8](https://github.com/ozum/pg-test-util/blob/bbd5d24/src/pg-test-util.ts#L8)
 
-### `Optional` user
-
-• **user**? : _undefined | string_
-
-_Defined in [types/index.ts:21](https://github.com/ozum/pg-test-util/blob/dcd573c/src/types/index.ts#L21)_
+<%_ } _%>

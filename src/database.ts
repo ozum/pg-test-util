@@ -1,201 +1,216 @@
-/* eslint-disable no-await-in-loop, no-restricted-syntax */
-import { VError } from "verror";
-import * as knex from "knex";
-import * as fs from "fs-extra";
-import { getConnectionObject, createKnex } from "./helper";
-import { ConnectionConfig, ConnectionConfigWithObject, ConnectionConfigWithString, TableInfo, SequenceInfo } from "./types";
+/* eslint-disable no-return-assign */
+import { promises } from "fs";
+import { join } from "path";
+import { Client, ClientConfig } from "pg";
+import escape = require("pg-escape");
+import VError from "verror";
+import { SequenceInfo, EntityInfo } from "./types";
+
+const { readFile } = promises;
+
+export type Oid = string;
 
 /** @ignore */
 export type DatabaseConstructorArgs = {
-  connection: ConnectionConfigWithObject | ConnectionConfigWithString;
-  schemas?: Array<string>;
-  preError: () => void;
+  clientConfig: ClientConfig;
+  schemas?: string[];
+  cleanup: () => Promise<void>;
   drop: () => Promise<void>;
 };
 
-/**
- * Database class is used for tasks related to individual database such as connecting, querying, getting tables, getting sequences etc.
- */
+/** Execute tasks related to individual database such as connecting, querying, getting tables, getting sequences etc. */
 export default class Database {
+  readonly #cleanup: () => Promise<void>;
+  readonly #clientConfig: ClientConfig;
+  readonly #schemaOids: Record<string, Oid> = {};
+  #isConnected = false;
+  #tables: EntityInfo[] = [];
+  #views: EntityInfo[] = [];
+  #materializedViews: EntityInfo[] = [];
+  #partitionedTables: EntityInfo[] = [];
+  #sequences: SequenceInfo[] = [];
+  #includedSchemas: string[];
+
+  /** [node-postgres client](https://node-postgres.com/api/client) */
+  readonly client: Client;
+
+  /** Drops the database. */
+  readonly drop: () => Promise<void>;
+
   /** @ignore */
-  constructor({ connection, schemas = ["public"], preError, drop }: DatabaseConstructorArgs) {
-    this.schemas = schemas;
-    this.preError = preError;
+  private constructor(client: Client, { clientConfig, schemas = ["public"], cleanup, drop }: DatabaseConstructorArgs) {
+    this.client = client;
+    this.#clientConfig = clientConfig;
+    this.#cleanup = cleanup;
     this.drop = drop;
-    this.connection = getConnectionObject(connection);
+    this.#includedSchemas = schemas;
   }
 
-  /** Schemas to be used in db structure related queries. */
-  private schemas: Array<string>;
+  /** @ignore */
+  static async new(args: DatabaseConstructorArgs): Promise<Database> {
+    const database = new Database(new Client(args.clientConfig), args);
+    await database.connect();
+    return database;
+  }
 
-  /** Cache of list of tables and their schemas in database i.e. `[{ schema: 'public', table: 'item' } ...]` */
-  private _tables?: TableInfo[];
+  async #getError(error: Error | VError, message: string): Promise<VError> {
+    await this.#cleanup();
+    return new VError(error, `${message} for '${this.name} database'`);
+  }
 
-  /** Sequences of the database i.e. `[{ schema: 'public', table: 'Item', column: 'id', sequence: 'Item_id_seq' } ...]` */
-  private _sequences?: SequenceInfo[];
-
-  /** Connection configuration for the database. */
-  private connection: ConnectionConfig;
-
-  /** knex object to use in queries. */
-  private _knex?: knex;
-
-  /** Whether this database is disconnected explicitly. */
-  private _isDisconnected = false;
-
-  /** Function to execute before throwing error.  */
-  private preError: () => void;
-
-  /** Function to drop this database. `DROP DATABSE` sql query must be executed from another database, so this function should be passed to constructor. */
-  public drop: () => Promise<void>;
-
-  /** Database name. */
+  /** Name of the database */
   get name(): string {
-    return this.connection.database;
+    return this.#clientConfig.database as string;
   }
 
-  /** Whether database is connected or not. */
-  get isConnected(): boolean {
-    return this._knex !== undefined;
-  }
-
-  /** `knex` object for database. It may be used to build queries easily. */
-  get knex(): knex {
-    if (!this._knex) {
-      this._knex = createKnex(this.connection.connectionString);
+  /** Connects to database. */
+  async connect(): Promise<void> {
+    if (this.#isConnected) return;
+    try {
+      this.#isConnected = true;
+      await this.client.connect();
+    } catch (error: any) {
+      throw await this.#getError(error, "Cannot connect client");
     }
-
-    return this._knex;
-  }
-
-  /** Connection string. */
-  get connectionString(): string {
-    return this.connection.connectionString;
   }
 
   /** Disconnects from database. */
   async disconnect(): Promise<void> {
-    if (this.isConnected) {
-      try {
-        await this.knex.destroy();
-        delete this._knex;
-      } catch (e) {
-        /* istanbul ignore next */
-        await this.preError();
-        /* istanbul ignore next */
-        throw new VError(e, `Cannot disconnect from '${this.name}' database`);
-      }
+    if (!this.#isConnected) return;
+    try {
+      this.#isConnected = false;
+      await this.client.end();
+    } catch (error: any) {
+      throw await this.#getError(error, "Cannot disconnect client");
     }
-    this._isDisconnected = true;
   }
 
-  /** Clears tables and sequences cache. */
-  refresh(): void {
-    this._tables = undefined;
-    this._sequences = undefined;
-  }
-
-  /**
-   * Returns tables from database. Uses cache for fast results. Use `refresh()` method to refresh the cache.
-   *
-   * @returns information about tables.
-   */
-  async getTables(): Promise<TableInfo[]> {
-    if (!this._tables) {
-      try {
-        this._tables = await this.knex("pg_tables")
-          .select("schemaname AS schema", "tablename AS table")
-          .whereIn("schemaname", this.schemas);
-      } catch (e) {
-        /* istanbul ignore next */
-        await this.preError();
-        /* istanbul ignore next */
-        throw new VError(e, `Cannot get tables from '${this.name}' database`);
-      }
+  /** Fetches database objects (i.e. tables, sequences) from database and refreshes the cache of the object. If you create new tables etc., you should refresh. */
+  async refresh(): Promise<void> {
+    if (Object.keys(this.#schemaOids).length === 0) {
+      const schemas = await this.queryFile<{ oid: Oid; name: string }>(join(__dirname, "../sql/schema.sql"), [this.#includedSchemas]);
+      schemas.forEach((schema) => (this.#schemaOids[schema.name] = schema.oid));
     }
 
-    /* istanbul ignore next */
-    return this._tables || [];
+    const entityOidMapper: Record<number, any> = {};
+    const entities = await this.queryFile(join(__dirname, "../sql/entity.sql"), [Object.values(this.#schemaOids)]);
+    const columns = await this.queryFile(join(__dirname, "../sql/column.sql"), [Object.values(this.#schemaOids)]);
+
+    this.#tables = [];
+    this.#views = [];
+    this.#materializedViews = [];
+    this.#partitionedTables = [];
+    this.#sequences = [];
+
+    entities.forEach((entity) => {
+      entityOidMapper[entity.oid] = entity;
+      if (entity.kindName === "table") this.#tables.push({ schema: entity.schema, name: entity.name });
+      else if (entity.kindName === "view") this.#views.push({ schema: entity.schema, name: entity.name });
+      else if (entity.kindName === "materialized view") this.#materializedViews.push({ schema: entity.schema, name: entity.name });
+      else if (entity.kindName === "partitioned table") this.#partitionedTables.push({ schema: entity.schema, name: entity.name });
+    });
+
+    const sequenceRegExp = /nextval\(['"]+(.+?)['"]+::regclass\)/;
+    columns.forEach((column) => {
+      const match = column.defaultWithTypeCast?.match(sequenceRegExp);
+      if (match) {
+        const entity = entityOidMapper[column.parentOid];
+        this.#sequences.push({ schema: entity.schema, table: entity.name, column: column.name, name: match[1] });
+      }
+    });
   }
 
-  /**
-   * Returns sequences from database. Uses cache for fast results. Use `refresh()` method to refresh the cache.
-   *
-   * @returns information about sequences
-   */
+  /** Returns tables from database. Uses cache for fast results. Use `refresh()` method to refresh the cache. */
+  async getTables(): Promise<EntityInfo[]> {
+    if (this.#tables.length === 0) await this.refresh();
+    return this.#tables;
+  }
+
+  /** Returns views from database. Uses cache for fast results. Use `refresh()` method to refresh the cache. */
+  async getViews(): Promise<EntityInfo[]> {
+    if (this.#tables.length === 0) await this.refresh();
+    return this.#views;
+  }
+
+  /** Returns materialized views from database. Uses cache for fast results. Use `refresh()` method to refresh the cache. */
+  async getMaterializedViews(): Promise<EntityInfo[]> {
+    if (this.#tables.length === 0) await this.refresh();
+    return this.#materializedViews;
+  }
+
+  /** Returns partitioned tables from database. Uses cache for fast results. Use `refresh()` method to refresh the cache. */
+  async getPartitionedTables(): Promise<EntityInfo[]> {
+    if (this.#tables.length === 0) await this.refresh();
+    return this.#partitionedTables;
+  }
+
+  /** Returns sequences from database. Uses cache for fast results. Use `refresh()` method to refresh the cache. */
   async getSequences(): Promise<SequenceInfo[]> {
-    if (!this._sequences) {
-      try {
-        this._sequences = await this.knex("information_schema.columns")
-          .select(
-            "table_schema AS schema",
-            "table_name AS table",
-            "column_name AS column",
-            this.knex.raw("regexp_replace(column_default, 'nextval\\([''\"]+(.+\\?)[''\"]+::regclass\\)', '\\1') AS sequence")
-          )
-          .where("column_default", "like", "nextval(%")
-          .whereIn("table_schema", this.schemas)
-          .orderBy("table_schema")
-          .orderBy("table_name")
-          .orderBy("column_name");
-      } catch (e) {
-        /* istanbul ignore next */
-        await this.preError();
-        /* istanbul ignore next */
-        throw new VError(e, `Cannot get sequences from '${this.name}' database`);
-      }
-    }
-
-    /* istanbul ignore next */
-    return this._sequences || [];
+    if (this.#sequences.length === 0) await this.refresh();
+    return this.#sequences;
   }
 
   /** Set current value of sequence for each column of all tables based on record with maximum number. If there are no record in the table, the value will be set to 1. */
-  async updateSequences(): Promise<void> {
+  async syncSequences(): Promise<void> {
     const sequences = await this.getSequences();
-
     try {
       await Promise.all(
         sequences.map((seq) =>
-          this.knex.raw("SELECT setval('??.??', (SELECT COALESCE((SELECT ?? + 1 FROM ?? ORDER BY ?? DESC LIMIT 1), 1)), false)", [
-            seq.schema,
-            seq.sequence,
-            seq.column,
-            seq.table,
-            seq.column,
-          ])
+          this.client.query(
+            escape(
+              "SELECT setval($1, (SELECT COALESCE((SELECT %I + 1 FROM %I ORDER BY %I DESC LIMIT 1), 1)), false)",
+              seq.column,
+              seq.table,
+              seq.column
+            ),
+            [`${seq.schema}.${seq.name}`]
+          )
         )
       );
-    } catch (e) {
-      /* istanbul ignore next */
-      await this.preError();
-      /* istanbul ignore next */
-      throw new VError(e, `Cannot update sequences from '${this.name}' database`);
+    } catch (error: any) {
+      throw await this.#getError(error, "Cannot update sequences");
     }
   }
 
   /**
-   * Truncates all tables in database.
+   * Truncates all tables and resets their sequences in the database.
    *
-   * @param ignoreTables are list of tables to ignore.
+   * @param ignore are the list of the tables to ignore.
    */
-  async truncate(ignoreTables: Array<string> = []): Promise<void> {
+  async truncate({ ignore = [] }: { ignore?: string[] } = {}): Promise<void> {
     const tables = await this.getTables();
-    const ignoreTablesWithSchema = ignoreTables.map((table) => (table.includes(".") ? table : `public.${table}`));
+    const ignoreSet = new Set(ignore);
 
-    const filteredTables = tables
-      .filter((table) => !ignoreTablesWithSchema.includes(`${table.schema}.${table.table}`))
-      .map((table) => `"${table.schema}"."${table.table}"`);
+    const tablesToTruncate = tables
+      .filter((table) => !ignoreSet.has(`${table.schema}.${table.name}`) && !ignoreSet.has(`${table.name}`))
+      .map((table) => `${escape(table.schema)}.${escape(table.name)}`);
 
-    if (filteredTables.length === 0) return;
+    if (tablesToTruncate.length === 0) return;
 
     try {
-      await this.knex.raw(`TRUNCATE ${filteredTables.join(", ")} RESTART IDENTITY`);
-    } catch (e) {
-      /* istanbul ignore next */
-      await this.preError();
-      /* istanbul ignore next */
-      throw new VError(e, `Cannot truncate tables from '${this.name}' database`);
+      await this.client.query(`TRUNCATE ${tablesToTruncate.join(", ")} RESTART IDENTITY`);
+    } catch (error: any) {
+      await this.#cleanup();
+      throw await this.#getError(error, `Cannot truncate tables`);
+    }
+  }
+
+  /**
+   * Executes given SQL and returns result rows.
+   *
+   * @typeparam T is type for single row returned by SQL query.
+   *
+   * @param sql is sql query.
+   * @param params are array of parameters to pass query.
+   * @returns result rows of the SQL query.
+   */
+  async query<T = any>(sql: string, params?: any[]): Promise<T[]> {
+    await this.connect();
+    try {
+      const result = await this.client.query(sql, params);
+      return result.rows;
+    } catch (error: any) {
+      throw await this.#getError(error, `Cannot execute SQL query`);
     }
   }
 
@@ -203,64 +218,18 @@ export default class Database {
    * Reads and executes SQL in given file and returns results.
    *
    * @typeparam T is type for single row returned by SQL query.
+   *
    * @param file is file to read SQL from.
+   * @param params are array of parameters to pass query.
    * @returns result rows of the SQL query.
    */
-  async queryFile<T extends any = any>(file: string): Promise<T[]> {
+  async queryFile<T = any>(file: string, params?: any[]): Promise<T[]> {
     try {
-      const sql = await fs.readFile(file, { encoding: "utf8" });
-      return this.query(sql);
-    } catch (e) {
-      await this.preError();
-      throw new VError(e, `Cannot execute given SQL file '${file}' for '${this.name}' database`);
+      const sql = await readFile(file, { encoding: "utf8" });
+      const rows = await this.query(sql, params);
+      return rows;
+    } catch (error: any) {
+      throw await this.#getError(error, `Cannot execute SQL file '${file}'`);
     }
   }
-
-  /**
-   * Executes given SQL and returns results.
-   *
-   * @typeparam T is type for single row returned by SQL query.
-   * @param sql is sql query or array of sql queries to execute.
-   * @returns result rows of the SQL query. If multiple queries are given results are concatenated into single array.
-   */
-  async query<T extends any = any>(sql: string | Array<string>): Promise<T[]> {
-    if (this._isDisconnected) {
-      await this.preError();
-      throw new Error("Database is explicitly disconnected by this library.");
-    }
-
-    if (!sql) {
-      await this.preError();
-      throw new Error("Either 'sql' or 'file' parameter must be present.");
-    }
-
-    if (Array.isArray(sql)) {
-      const results = [];
-
-      for (const sqlQuery of sql) {
-        try {
-          const response = await this.knex.raw(sqlQuery);
-          results.push(response.rows); // Must be serial execution. Cannot use Promise.all()
-        } catch (e) {
-          await this.preError();
-          throw new VError(e, `Cannot execute given query array for '${this.name}' database`);
-        }
-      }
-
-      return results;
-    }
-
-    try {
-      const response = await this.knex.raw(sql);
-      return response.rows;
-    } catch (e) {
-      await this.preError();
-      throw new VError(e, `Cannot execute given query for '${this.name}' database`);
-    }
-  }
-
-  // /** Drops database. */
-  // async drop(): Promise<void> {
-  //   return this._drop(this.name);
-  // }
 }

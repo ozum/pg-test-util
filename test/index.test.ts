@@ -1,10 +1,3 @@
-{% include "module-header" %}
-
-{%- include "installation" -%}
-
-# Synopsis
-
-```ts
 import PgTestUtil from "../src/index";
 
 let pgTestUtil: PgTestUtil;
@@ -24,16 +17,3 @@ describe("pg-test-util", () => {
     expect(await database.query("SELECT * FROM member")).toEqual([]);
   });
 });
-```
-
-# Details
-
-<!-- usage -->
-
-<!-- commands -->
-
-<%_ if (typedoc) { _%>
-# API
-
-{% include "api.md" %}
-<%_ } _%>
