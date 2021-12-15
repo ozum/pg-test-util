@@ -55,7 +55,7 @@ export default class Database {
 
   async #getError(error: Error | VError, message: string): Promise<VError> {
     await this.#cleanup();
-    return new VError(error, `${message} for '${this.name} database'`);
+    return new VError(error, `${message} for '${this.name}' database`);
   }
 
   /** Name of the database */
