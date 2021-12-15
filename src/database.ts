@@ -207,7 +207,9 @@ export default class Database {
   async query<T = any>(sql: string, params?: any[]): Promise<T[]> {
     await this.connect();
     try {
-      const result = await this.client.query(sql, params);
+      // Remove utf BOM from start. BOM causes syntax error in postgres.
+      const nonBOMSql = sql.charCodeAt(0) === 0xfeff ? sql.slice(1) : sql;
+      const result = await this.client.query(nonBOMSql, params);
       return result.rows;
     } catch (error: any) {
       throw await this.#getError(error, `Cannot execute SQL query`);
