@@ -4,10 +4,16 @@ import escape = require("pg-escape");
 import Database from "./database";
 import { getConnectionConfig } from "./utils/get-connection-config";
 
+/** Options */
 export interface Options {
+  /** Drop only objects created by this instance. */
   safe?: boolean;
+  /** Prefix to be used when creating new databases. */
   baseName?: string;
+  /** Whether to drop all created objects if error is thorwn. */
   cleanupOnError?: boolean;
+  /** Admin database name to connect. To create other databases we need to connect a database. */
+  database?: string;
 }
 
 /** PgTestUtil class is used to perform PostgreSQL operations related to unit testing such as create database, truncate database and drop database etc. */
@@ -39,7 +45,7 @@ export default class PgTestUtil {
   static async new(connection: Client | ClientConfig | string, options: Options = {}): Promise<PgTestUtil> {
     try {
       const connectionConfig = getConnectionConfig(connection);
-      const adminClient = connection instanceof Client ? connection : new Client({ database: "template1", ...connectionConfig });
+      const adminClient = connection instanceof Client ? connection : new Client({ database: "postgres", ...connectionConfig });
       await adminClient.connect();
       return new this(adminClient, typeof connectionConfig.password === "string" ? connectionConfig.password : undefined, options);
     } catch (error: any) {

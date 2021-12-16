@@ -67,6 +67,7 @@ PostgreSQL administrative utilities such as creating and dropping tables, users 
   - [Properties](#properties-3)
     - [baseName](#basename)
     - [cleanupOnError](#cleanuponerror)
+    - [database](#database)
     - [safe](#safe)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -140,7 +141,7 @@ Type to store entity details.
 
 #### Defined in
 
-[types.ts:2](https://github.com/ozum/pg-test-util/blob/788fd73/src/types.ts#L2)
+[types.ts:2](https://github.com/ozum/pg-test-util/blob/692fcaf/src/types.ts#L2)
 
 ---
 
@@ -159,7 +160,7 @@ Type to store entity details.
 
 #### Defined in
 
-[types.ts:9](https://github.com/ozum/pg-test-util/blob/788fd73/src/types.ts#L9)
+[types.ts:9](https://github.com/ozum/pg-test-util/blob/692fcaf/src/types.ts#L9)
 
 # Classes
 
@@ -207,7 +208,7 @@ Execute tasks related to individual database such as connecting, querying, getti
 
 #### Defined in
 
-[database.ts:35](https://github.com/ozum/pg-test-util/blob/788fd73/src/database.ts#L35)
+[database.ts:35](https://github.com/ozum/pg-test-util/blob/692fcaf/src/database.ts#L35)
 
 ---
 
@@ -227,7 +228,7 @@ Drops the database.
 
 #### Defined in
 
-[database.ts:38](https://github.com/ozum/pg-test-util/blob/788fd73/src/database.ts#L38)
+[database.ts:38](https://github.com/ozum/pg-test-util/blob/692fcaf/src/database.ts#L38)
 
 ## Accessors
 
@@ -243,7 +244,7 @@ Name of the database
 
 #### Defined in
 
-[database.ts:62](https://github.com/ozum/pg-test-util/blob/788fd73/src/database.ts#L62)
+[database.ts:62](https://github.com/ozum/pg-test-util/blob/692fcaf/src/database.ts#L62)
 
 ## Methods
 
@@ -259,7 +260,7 @@ Connects to database.
 
 #### Defined in
 
-[database.ts:67](https://github.com/ozum/pg-test-util/blob/788fd73/src/database.ts#L67)
+[database.ts:67](https://github.com/ozum/pg-test-util/blob/692fcaf/src/database.ts#L67)
 
 ---
 
@@ -275,7 +276,7 @@ Disconnects from database.
 
 #### Defined in
 
-[database.ts:78](https://github.com/ozum/pg-test-util/blob/788fd73/src/database.ts#L78)
+[database.ts:78](https://github.com/ozum/pg-test-util/blob/692fcaf/src/database.ts#L78)
 
 ---
 
@@ -291,7 +292,7 @@ Returns materialized views from database. Uses cache for fast results. Use `refr
 
 #### Defined in
 
-[database.ts:136](https://github.com/ozum/pg-test-util/blob/788fd73/src/database.ts#L136)
+[database.ts:136](https://github.com/ozum/pg-test-util/blob/692fcaf/src/database.ts#L136)
 
 ---
 
@@ -307,7 +308,7 @@ Returns partitioned tables from database. Uses cache for fast results. Use `refr
 
 #### Defined in
 
-[database.ts:142](https://github.com/ozum/pg-test-util/blob/788fd73/src/database.ts#L142)
+[database.ts:142](https://github.com/ozum/pg-test-util/blob/692fcaf/src/database.ts#L142)
 
 ---
 
@@ -323,7 +324,7 @@ Returns sequences from database. Uses cache for fast results. Use `refresh()` me
 
 #### Defined in
 
-[database.ts:148](https://github.com/ozum/pg-test-util/blob/788fd73/src/database.ts#L148)
+[database.ts:148](https://github.com/ozum/pg-test-util/blob/692fcaf/src/database.ts#L148)
 
 ---
 
@@ -339,7 +340,7 @@ Returns tables from database. Uses cache for fast results. Use `refresh()` metho
 
 #### Defined in
 
-[database.ts:124](https://github.com/ozum/pg-test-util/blob/788fd73/src/database.ts#L124)
+[database.ts:124](https://github.com/ozum/pg-test-util/blob/692fcaf/src/database.ts#L124)
 
 ---
 
@@ -355,7 +356,7 @@ Returns views from database. Uses cache for fast results. Use `refresh()` method
 
 #### Defined in
 
-[database.ts:130](https://github.com/ozum/pg-test-util/blob/788fd73/src/database.ts#L130)
+[database.ts:130](https://github.com/ozum/pg-test-util/blob/692fcaf/src/database.ts#L130)
 
 ---
 
@@ -386,7 +387,7 @@ result rows of the SQL query.
 
 #### Defined in
 
-[database.ts:207](https://github.com/ozum/pg-test-util/blob/788fd73/src/database.ts#L207)
+[database.ts:207](https://github.com/ozum/pg-test-util/blob/692fcaf/src/database.ts#L207)
 
 ---
 
@@ -417,7 +418,7 @@ result rows of the SQL query.
 
 #### Defined in
 
-[database.ts:228](https://github.com/ozum/pg-test-util/blob/788fd73/src/database.ts#L228)
+[database.ts:228](https://github.com/ozum/pg-test-util/blob/692fcaf/src/database.ts#L228)
 
 ---
 
@@ -433,7 +434,7 @@ Fetches database objects (i.e. tables, sequences) from database and refreshes th
 
 #### Defined in
 
-[database.ts:89](https://github.com/ozum/pg-test-util/blob/788fd73/src/database.ts#L89)
+[database.ts:89](https://github.com/ozum/pg-test-util/blob/692fcaf/src/database.ts#L89)
 
 ---
 
@@ -449,7 +450,7 @@ Set current value of sequence for each column of all tables based on record with
 
 #### Defined in
 
-[database.ts:154](https://github.com/ozum/pg-test-util/blob/788fd73/src/database.ts#L154)
+[database.ts:154](https://github.com/ozum/pg-test-util/blob/692fcaf/src/database.ts#L154)
 
 ---
 
@@ -472,7 +473,7 @@ Truncates all tables and resets their sequences in the database.
 
 #### Defined in
 
-[database.ts:180](https://github.com/ozum/pg-test-util/blob/788fd73/src/database.ts#L180)
+[database.ts:180](https://github.com/ozum/pg-test-util/blob/692fcaf/src/database.ts#L180)
 
 <a name="classesdefaultmd"></a>
 
@@ -516,7 +517,7 @@ PgTestUtil class is used to perform PostgreSQL operations related to unit testin
 
 #### Defined in
 
-[pg-test-util.ts:304](https://github.com/ozum/pg-test-util/blob/788fd73/src/pg-test-util.ts#L304)
+[pg-test-util.ts:310](https://github.com/ozum/pg-test-util/blob/692fcaf/src/pg-test-util.ts#L310)
 
 ---
 
@@ -544,7 +545,7 @@ Copies a given database with a new name.
 
 #### Defined in
 
-[pg-test-util.ts:183](https://github.com/ozum/pg-test-util/blob/788fd73/src/pg-test-util.ts#L183)
+[pg-test-util.ts:189](https://github.com/ozum/pg-test-util/blob/692fcaf/src/pg-test-util.ts#L189)
 
 ---
 
@@ -575,7 +576,7 @@ Creates a database. If name is not provided generates a name using `baseName` fr
 
 #### Defined in
 
-[pg-test-util.ts:142](https://github.com/ozum/pg-test-util/blob/788fd73/src/pg-test-util.ts#L142)
+[pg-test-util.ts:148](https://github.com/ozum/pg-test-util/blob/692fcaf/src/pg-test-util.ts#L148)
 
 ---
 
@@ -598,7 +599,7 @@ Creates a new database user if it does not exist.
 
 #### Defined in
 
-[pg-test-util.ts:250](https://github.com/ozum/pg-test-util/blob/788fd73/src/pg-test-util.ts#L250)
+[pg-test-util.ts:256](https://github.com/ozum/pg-test-util/blob/692fcaf/src/pg-test-util.ts#L256)
 
 ---
 
@@ -614,7 +615,7 @@ Disconnects admin client.
 
 #### Defined in
 
-[pg-test-util.ts:103](https://github.com/ozum/pg-test-util/blob/788fd73/src/pg-test-util.ts#L103)
+[pg-test-util.ts:109](https://github.com/ozum/pg-test-util/blob/692fcaf/src/pg-test-util.ts#L109)
 
 ---
 
@@ -637,7 +638,7 @@ Disconnects all clients.
 
 #### Defined in
 
-[pg-test-util.ts:117](https://github.com/ozum/pg-test-util/blob/788fd73/src/pg-test-util.ts#L117)
+[pg-test-util.ts:123](https://github.com/ozum/pg-test-util/blob/692fcaf/src/pg-test-util.ts#L123)
 
 ---
 
@@ -660,7 +661,7 @@ Drops all items created by this instance.
 
 #### Defined in
 
-[pg-test-util.ts:300](https://github.com/ozum/pg-test-util/blob/788fd73/src/pg-test-util.ts#L300)
+[pg-test-util.ts:306](https://github.com/ozum/pg-test-util/blob/692fcaf/src/pg-test-util.ts#L306)
 
 ---
 
@@ -683,7 +684,7 @@ Drops all databases created by this instance.
 
 #### Defined in
 
-[pg-test-util.ts:239](https://github.com/ozum/pg-test-util/blob/788fd73/src/pg-test-util.ts#L239)
+[pg-test-util.ts:245](https://github.com/ozum/pg-test-util/blob/692fcaf/src/pg-test-util.ts#L245)
 
 ---
 
@@ -699,7 +700,7 @@ Drops all users created by this instance.
 
 #### Defined in
 
-[pg-test-util.ts:289](https://github.com/ozum/pg-test-util/blob/788fd73/src/pg-test-util.ts#L289)
+[pg-test-util.ts:295](https://github.com/ozum/pg-test-util/blob/692fcaf/src/pg-test-util.ts#L295)
 
 ---
 
@@ -719,7 +720,7 @@ Drops all users created by this instance.
 
 #### Defined in
 
-[pg-test-util.ts:229](https://github.com/ozum/pg-test-util/blob/788fd73/src/pg-test-util.ts#L229)
+[pg-test-util.ts:235](https://github.com/ozum/pg-test-util/blob/692fcaf/src/pg-test-util.ts#L235)
 
 ---
 
@@ -744,7 +745,7 @@ If `dropOnlyCreated` is true and database is not created by this instance, throw
 
 #### Defined in
 
-[pg-test-util.ts:211](https://github.com/ozum/pg-test-util/blob/788fd73/src/pg-test-util.ts#L211)
+[pg-test-util.ts:217](https://github.com/ozum/pg-test-util/blob/692fcaf/src/pg-test-util.ts#L217)
 
 ---
 
@@ -768,7 +769,7 @@ Drops database user.
 
 #### Defined in
 
-[pg-test-util.ts:280](https://github.com/ozum/pg-test-util/blob/788fd73/src/pg-test-util.ts#L280)
+[pg-test-util.ts:286](https://github.com/ozum/pg-test-util/blob/692fcaf/src/pg-test-util.ts#L286)
 
 ---
 
@@ -790,7 +791,7 @@ Fetches the list of all databases from server.
 
 #### Defined in
 
-[pg-test-util.ts:124](https://github.com/ozum/pg-test-util/blob/788fd73/src/pg-test-util.ts#L124)
+[pg-test-util.ts:130](https://github.com/ozum/pg-test-util/blob/692fcaf/src/pg-test-util.ts#L130)
 
 ---
 
@@ -815,7 +816,7 @@ If no connection details are provided, default database is returned using same c
 
 #### Defined in
 
-[pg-test-util.ts:90](https://github.com/ozum/pg-test-util/blob/788fd73/src/pg-test-util.ts#L90)
+[pg-test-util.ts:96](https://github.com/ozum/pg-test-util/blob/692fcaf/src/pg-test-util.ts#L96)
 
 ---
 
@@ -839,7 +840,7 @@ array of usernames.
 
 #### Defined in
 
-[pg-test-util.ts:267](https://github.com/ozum/pg-test-util/blob/788fd73/src/pg-test-util.ts#L267)
+[pg-test-util.ts:273](https://github.com/ozum/pg-test-util/blob/692fcaf/src/pg-test-util.ts#L273)
 
 ---
 
@@ -871,7 +872,7 @@ result rows of the SQL query.
 
 #### Defined in
 
-[pg-test-util.ts:75](https://github.com/ozum/pg-test-util/blob/788fd73/src/pg-test-util.ts#L75)
+[pg-test-util.ts:81](https://github.com/ozum/pg-test-util/blob/692fcaf/src/pg-test-util.ts#L81)
 
 ---
 
@@ -894,7 +895,7 @@ Create an instance.
 
 #### Defined in
 
-[pg-test-util.ts:39](https://github.com/ozum/pg-test-util/blob/788fd73/src/pg-test-util.ts#L39)
+[pg-test-util.ts:45](https://github.com/ozum/pg-test-util/blob/692fcaf/src/pg-test-util.ts#L45)
 
 # Interfaces
 
@@ -904,12 +905,15 @@ Create an instance.
 
 # Interface: Options
 
+Options
+
 ## Table of contents
 
 ### Properties
 
 - [baseName](#basename)
 - [cleanupOnError](#cleanuponerror)
+- [database](#database)
 - [safe](#safe)
 
 ## Properties
@@ -918,9 +922,11 @@ Create an instance.
 
 • `Optional` **baseName**: `string`
 
+Prefix to be used when creating new databases.
+
 #### Defined in
 
-[pg-test-util.ts:9](https://github.com/ozum/pg-test-util/blob/788fd73/src/pg-test-util.ts#L9)
+[pg-test-util.ts:12](https://github.com/ozum/pg-test-util/blob/692fcaf/src/pg-test-util.ts#L12)
 
 ---
 
@@ -928,9 +934,23 @@ Create an instance.
 
 • `Optional` **cleanupOnError**: `boolean`
 
+Whether to drop all created objects if error is thorwn.
+
 #### Defined in
 
-[pg-test-util.ts:10](https://github.com/ozum/pg-test-util/blob/788fd73/src/pg-test-util.ts#L10)
+[pg-test-util.ts:14](https://github.com/ozum/pg-test-util/blob/692fcaf/src/pg-test-util.ts#L14)
+
+---
+
+### database
+
+• `Optional` **database**: `string`
+
+Admin database name to connect. To create other databases we need to connect a database.
+
+#### Defined in
+
+[pg-test-util.ts:16](https://github.com/ozum/pg-test-util/blob/692fcaf/src/pg-test-util.ts#L16)
 
 ---
 
@@ -938,8 +958,10 @@ Create an instance.
 
 • `Optional` **safe**: `boolean`
 
+Drop only objects created by this instance.
+
 #### Defined in
 
-[pg-test-util.ts:8](https://github.com/ozum/pg-test-util/blob/788fd73/src/pg-test-util.ts#L8)
+[pg-test-util.ts:10](https://github.com/ozum/pg-test-util/blob/692fcaf/src/pg-test-util.ts#L10)
 
 <%_ } _%>
