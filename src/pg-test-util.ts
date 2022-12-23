@@ -127,8 +127,8 @@ export default class PgTestUtil {
   }
 
   /** Fetches the list of all databases from server. */
-  async fetcAllDatabaseNames(onlyCreated: boolean): Promise<Array<string>> {
-    const databases = (await this.query("SELECT datname FROM pg_database")).map((row) => row.datName);
+  async fetchAllDatabaseNames(onlyCreated?: boolean): Promise<Array<string>> {
+    const databases = (await this.query("SELECT datname FROM pg_database")).map((row) => row.datname);
     return onlyCreated ? databases.filter((database) => this.#createdDatabaseNames.includes(database)) : databases;
   }
 
